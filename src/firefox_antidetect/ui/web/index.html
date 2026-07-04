@@ -191,13 +191,12 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
       </div>
       <div class="modal-body">
         <div class="field wide"><label>Name</label><input id="f-name" placeholder="Retail US - A"></div>
-        <div class="field"><label>Seed</label>
+        <div class="field wide"><label>Seed</label>
           <div class="seedrow"><input class="mono" id="f-seed" placeholder="0x…">
             <button class="dice" id="f-dice" title="Regenerate seed" aria-label="Regenerate seed" type="button">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.5 4"/><path d="M20 5v6h-6"/></svg>
             </button></div>
         </div>
-        <div class="field"><label>Binary</label><input class="mono" id="f-binary" placeholder="default"></div>
         <div class="field wide"><label>Proxy</label>
           <div class="seg sx" id="f-proxymode" role="group" aria-label="Proxy mode">
             <button data-v="sx" class="on" type="button">SX.ORG</button><button data-v="none" type="button">No proxy</button>
@@ -211,8 +210,6 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
             <button data-v="sticky" class="on" type="button">Sticky</button><button data-v="request" type="button">On request</button>
           </div>
         </div>
-        <div class="field"><label>Locale</label><input class="mono" id="f-locale" value="auto"></div>
-        <div class="field"><label>Timezone</label><input class="mono" id="f-timezone" value="auto"></div>
 
         <div class="card">
           <div class="top"><span class="lab">Fingerprint preview</span><span class="vid" id="fp-vid">—</span></div>
@@ -327,9 +324,6 @@ function openEdit(id){
   $("#m-title").textContent   = p? p.name : "New profile";
   $("#f-name").value = p? p.name : "";
   $("#f-seed").value = p? p.seed_hex : "";
-  $("#f-binary").value = p? (p.binary_ver||"") : "";
-  $("#f-locale").value = p? p.locale : "auto";
-  $("#f-timezone").value = p? p.timezone : "auto";
   const pr = p && p.proxy;
   setProxyMode(pr?"sx":(p?"none":"sx"));
   if(pr){ $("#f-country").value = pr.country||pr.cc||"US"; setRotation(pr.rotation||"sticky"); }
@@ -345,9 +339,7 @@ function collect(){
   const proxy = state.proxymode==="sx"
     ? { provider:"sx", country:$("#f-country").value, rotation:state.rotation }
     : null;
-  return { id:state.editing, name:$("#f-name").value, seed:$("#f-seed").value,
-           binary_ver:$("#f-binary").value, locale:$("#f-locale").value,
-           timezone:$("#f-timezone").value, proxy };
+  return { id:state.editing, name:$("#f-name").value, seed:$("#f-seed").value, proxy };
 }
 async function save(thenLaunch){
   const a=api(); if(!a) return;
