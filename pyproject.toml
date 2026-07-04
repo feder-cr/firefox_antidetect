@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "invisible-manager"
+version = "0.1.0"
+description = "Antidetect browser profile manager for the patched Firefox (manual use)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "feder-cr", email = "85809106+feder-cr@users.noreply.github.com" }]
+dependencies = [
+    "invisible-core @ git+https://github.com/feder-cr/invisible_core.git",
+    "platformdirs>=4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/invisible_manager"]
+
+[tool.pytest.ini_options]
+addopts = "-m 'not integration'"
+markers = ["integration: launches a real firefox-13 binary"]
