@@ -134,6 +134,7 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 .card .grid{display:grid;grid-template-columns:1fr 1fr}
 .card .kv{padding:11px 14px;border-bottom:1px solid var(--line-2)}
 .card .kv:nth-child(odd){border-right:1px solid var(--line-2)}
+.card .kv.span{grid-column:1 / -1;border-right:none;border-bottom:none}
 .card .kv .k{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
 .card .kv .v{font:500 12.5px/1.35 var(--mono);margin-top:4px;color:var(--text)}
 .card .foot{padding:10px 14px;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
@@ -210,10 +211,8 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
           <div class="grid">
             <div class="kv"><div class="k">GPU</div><div class="v" id="fp-gpu">—</div></div>
             <div class="kv"><div class="k">Screen</div><div class="v" id="fp-screen">—</div></div>
-            <div class="kv"><div class="k">Hardware</div><div class="v" id="fp-hw">—</div></div>
-            <div class="kv"><div class="k">Fonts</div><div class="v" id="fp-fonts">—</div></div>
+            <div class="kv span"><div class="k">Hardware</div><div class="v" id="fp-hw">—</div></div>
           </div>
-          <div class="foot"><span class="d"></span>Deterministic<span class="sep"></span>same seed = same identity every launch</div>
         </div>
       </div>
       <div class="modal-foot">
@@ -304,11 +303,10 @@ async function refreshFp(){
   const a=api(); if(!a) return;
   const seed=state.seedHex; if(!seed){ $("#fp-vid").textContent="—"; return; }
   let fp; try{ fp=await a.fingerprint_preview(seed); }catch(e){ return; }
-  if(!fp || fp.error){ $("#fp-gpu").textContent=$("#fp-screen").textContent=$("#fp-hw").textContent=$("#fp-fonts").textContent="—"; $("#fp-vid").textContent="—"; return; }
+  if(!fp || fp.error){ $("#fp-gpu").textContent=$("#fp-screen").textContent=$("#fp-hw").textContent="—"; $("#fp-vid").textContent="—"; return; }
   $("#fp-gpu").innerHTML=esc(fp.gpu_vendor||"")+"<br>"+esc(fp.gpu_renderer||"");
   $("#fp-screen").textContent=fp.screen||"—";
   $("#fp-hw").textContent=(fp.hardware_concurrency||"?")+" cores";
-  $("#fp-fonts").textContent=(fp.fonts_n||"?")+" fonts";
   $("#fp-vid").textContent=seed;   // the anchored identity (read-only)
 }
 function openEdit(id){
