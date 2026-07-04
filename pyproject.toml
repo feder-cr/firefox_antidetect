@@ -27,4 +27,4 @@ packages = ["src/firefox_antidetect"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not integration'"
-markers = ["integration: launches a real firefox-13 binary"]
+markers = ["integration: launches a real firefox-14 binary"]

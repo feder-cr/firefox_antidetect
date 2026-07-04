@@ -40,7 +40,7 @@ python -m firefox_antidetect
 ```bash
 pip install -e ".[dev]"
 python -m pytest -q                 # unit + Qt smoke (offscreen)
-python -m pytest -m integration -q  # launches a real firefox-13 (needs the binary)
+python -m pytest -m integration -q  # launches a real firefox-14 (needs the binary)
 ```
 
 ## Packaging (standalone app)

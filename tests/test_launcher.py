@@ -53,7 +53,7 @@ def test_launch_uses_injected_spawn(tmp_path, monkeypatch):
 
 @pytest.mark.integration
 def test_real_launch_starts_and_exits(tmp_path):
-    """Launches the real firefox-13 headless and confirms the process starts.
+    """Launches the real firefox-14 headless and confirms the process starts.
     Opt-in: run with `python -m pytest -m integration`. Needs the cached binary
     (or network for ensure_binary)."""
     os.environ["MOZ_HEADLESS"] = "1"
