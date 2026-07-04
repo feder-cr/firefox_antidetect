@@ -1,4 +1,4 @@
-from invisible_manager.manager import paths
+from antidetect_firefox.manager import paths
 
 
 def test_profile_dir_under_base(tmp_path):

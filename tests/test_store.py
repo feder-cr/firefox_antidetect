@@ -1,5 +1,5 @@
-from invisible_manager.manager.models import Profile
-from invisible_manager.manager.store import ProfileStore
+from antidetect_firefox.manager.models import Profile
+from antidetect_firefox.manager.store import ProfileStore
 
 
 def _store(tmp_path):

@@ -16,7 +16,7 @@ def build_main_window(store, launcher) -> QtWidgets.QMainWindow:
 
 def run() -> int:
     app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName("invisible_manager")
+    app.setApplicationName("antidetect_firefox")
     store = ProfileStore(paths.db_path())
     win = build_main_window(store, _launcher)
     win.show()
