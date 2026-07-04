@@ -42,3 +42,16 @@ pip install -e ".[dev]"
 python -m pytest -q                 # unit + Qt smoke (offscreen)
 python -m pytest -m integration -q  # launches a real firefox-13 (needs the binary)
 ```
+
+## Packaging (standalone app)
+
+```bash
+pip install pyinstaller
+pyinstaller packaging/invisible_manager.spec     # run once per OS
+```
+
+Produces an onedir bundle under `dist/invisible_manager/` (Windows `.exe`,
+Linux dir/AppImage-ready, macOS `.app`). The Firefox binary is **not** bundled —
+`ensure_binary()` downloads it on first launch. Code-signing and auto-update are
+future work.
+
