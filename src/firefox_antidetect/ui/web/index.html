@@ -191,12 +191,6 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
       </div>
       <div class="modal-body">
         <div class="field wide"><label>Name</label><input id="f-name" placeholder="Retail US - A"></div>
-        <div class="field wide"><label>Seed</label>
-          <div class="seedrow"><input class="mono" id="f-seed" placeholder="0x…">
-            <button class="dice" id="f-dice" title="Regenerate seed" aria-label="Regenerate seed" type="button">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.5 4"/><path d="M20 5v6h-6"/></svg>
-            </button></div>
-        </div>
         <div class="field wide"><label>Proxy</label>
           <div class="seg sx" id="f-proxymode" role="group" aria-label="Proxy mode">
             <button data-v="sx" class="on" type="button">SX.ORG</button><button data-v="none" type="button">No proxy</button>
@@ -237,7 +231,7 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C9852F","#4F7CC9","#3F9D6B","#8A6FC0","#B36A4A","#6B7480","#B8506A","#3E8E8E"];
-let state = { profiles: [], selected: null, editing: null, proxymode: "sx", rotation: "sticky" };
+let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", rotation: "sticky" };
 
 /* --- pywebview bridge (api ready after `pywebviewready`) --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -308,29 +302,29 @@ function setRotation(r){
 }
 async function refreshFp(){
   const a=api(); if(!a) return;
-  const seed=$("#f-seed").value.trim(); if(!seed){ $("#fp-vid").textContent="—"; return; }
+  const seed=state.seedHex; if(!seed){ $("#fp-vid").textContent="—"; return; }
   let fp; try{ fp=await a.fingerprint_preview(seed); }catch(e){ return; }
-  if(!fp || fp.error){ $("#fp-gpu").textContent=$("#fp-screen").textContent=$("#fp-hw").textContent=$("#fp-fonts").textContent="—"; $("#fp-vid").textContent="invalid seed"; return; }
+  if(!fp || fp.error){ $("#fp-gpu").textContent=$("#fp-screen").textContent=$("#fp-hw").textContent=$("#fp-fonts").textContent="—"; $("#fp-vid").textContent="—"; return; }
   $("#fp-gpu").innerHTML=esc(fp.gpu_vendor||"")+"<br>"+esc(fp.gpu_renderer||"");
   $("#fp-screen").textContent=fp.screen||"—";
   $("#fp-hw").textContent=(fp.hardware_concurrency||"?")+" cores";
   $("#fp-fonts").textContent=(fp.fonts_n||"?")+" fonts";
-  $("#fp-vid").textContent=($("#f-seed").value||"").slice(0,14);
+  $("#fp-vid").textContent=seed;   // the anchored identity (read-only)
 }
 function openEdit(id){
   const p=id ? state.profiles.find(x=>x.id===id) : null;
   state.editing = id || null;
+  state.seedHex = p ? p.seed_hex : null;   // existing: fixed; new: minted below
   $("#m-eyebrow").textContent = p?"Edit profile":"New profile";
   $("#m-title").textContent   = p? p.name : "New profile";
   $("#f-name").value = p? p.name : "";
-  $("#f-seed").value = p? p.seed_hex : "";
   const pr = p && p.proxy;
   setProxyMode(pr?"sx":(p?"none":"sx"));
   if(pr){ $("#f-country").value = pr.country||pr.cc||"US"; setRotation(pr.rotation||"sticky"); }
   else setRotation("sticky");
   $("#backdrop").classList.add("show");
-  if(!p){ // fresh: seed a random identity so preview isn't empty
-    api() && api().new_seed().then(s=>{ $("#f-seed").value=s.seed_hex; refreshFp(); });
+  if(!p){ // fresh profile: mint one fixed identity now, anchored to it
+    if(api()) api().new_seed().then(s=>{ state.seedHex=s.seed_hex; refreshFp(); });
   } else refreshFp();
   $("#f-name").focus();
 }
@@ -339,10 +333,11 @@ function collect(){
   const proxy = state.proxymode==="sx"
     ? { provider:"sx", country:$("#f-country").value, rotation:state.rotation }
     : null;
-  return { id:state.editing, name:$("#f-name").value, seed:$("#f-seed").value, proxy };
+  return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
 async function save(thenLaunch){
   const a=api(); if(!a) return;
+  if(!state.seedHex){ const s=await a.new_seed(); state.seedHex=s.seed_hex; }  // guard the mint race
   const res=await a.save_profile(collect());
   if(!res || !res.ok){ toast((res&&res.error)||"Save failed", true); return; }
   await reload();
@@ -379,8 +374,6 @@ $("#m-x").addEventListener("click",closeModal);
 $("#m-cancel").addEventListener("click",closeModal);
 $("#m-save").addEventListener("click",()=>save(false));
 $("#m-savelaunch").addEventListener("click",()=>save(true));
-$("#f-dice").addEventListener("click",()=>api()&&api().new_seed().then(s=>{ $("#f-seed").value=s.seed_hex; refreshFp(); }));
-$("#f-seed").addEventListener("input",refreshFp);
 $("#f-proxymode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProxyMode(b.dataset.v); });
 $("#f-rotation").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setRotation(b.dataset.v); });
 $("#backdrop").addEventListener("click",e=>{ if(e.target===$("#backdrop")) closeModal(); });
