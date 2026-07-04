@@ -8,9 +8,11 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 block_cipher = None
 
 datas = collect_data_files("invisible_core")  # _fpforge/data/*.json, data/font-map.json
+datas += collect_data_files("firefox_antidetect", includes=["**/*.html"])  # ui/web/index.html
 hiddenimports = (
     collect_submodules("invisible_core")
     + collect_submodules("firefox_antidetect")
+    + collect_submodules("webview")  # pywebview platform backends (edgechromium/gtk/cocoa)
 )
 
 a = Analysis(

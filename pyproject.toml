@@ -13,11 +13,11 @@ authors = [{ name = "feder-cr", email = "85809106+feder-cr@users.noreply.github.
 dependencies = [
     "invisible-core @ git+https://github.com/feder-cr/invisible_core.git",
     "platformdirs>=4",
-    "PySide6-Essentials>=6.6",
+    "pywebview>=4.4",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "pytest-qt>=4"]
+dev = ["pytest>=7"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
