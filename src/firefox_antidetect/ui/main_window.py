@@ -25,7 +25,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._launcher = launcher
         self._profiles: List[Profile] = []
         self._running: Dict[str, object] = {}  # profile_id -> LaunchHandle
-        self.setWindowTitle("antidetect_firefox")
+        self.setWindowTitle("firefox_antidetect")
         self.resize(720, 420)
 
         self.table = QtWidgets.QTableWidget(0, len(_COLUMNS))

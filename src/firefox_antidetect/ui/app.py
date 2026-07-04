@@ -16,7 +16,7 @@ def build_main_window(store, launcher) -> QtWidgets.QMainWindow:
 
 def run() -> int:
     app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName("antidetect_firefox")
+    app.setApplicationName("firefox_antidetect")
     store = ProfileStore(paths.db_path())
     win = build_main_window(store, _launcher)
     win.show()

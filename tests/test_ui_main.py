@@ -1,7 +1,7 @@
 def test_new_profile_appears_in_table(qtbot, tmp_path):
-    from antidetect_firefox.manager.store import ProfileStore
-    from antidetect_firefox.manager.models import Profile
-    from antidetect_firefox.ui.main_window import MainWindow
+    from firefox_antidetect.manager.store import ProfileStore
+    from firefox_antidetect.manager.models import Profile
+    from firefox_antidetect.ui.main_window import MainWindow
     store = ProfileStore(tmp_path / "p.db")
     w = MainWindow(store, launcher=None); qtbot.addWidget(w)
     store.create(Profile.new(name="A", seed=1))
@@ -11,9 +11,9 @@ def test_new_profile_appears_in_table(qtbot, tmp_path):
 
 
 def test_delete_removes_row(qtbot, tmp_path):
-    from antidetect_firefox.manager.store import ProfileStore
-    from antidetect_firefox.manager.models import Profile
-    from antidetect_firefox.ui.main_window import MainWindow
+    from firefox_antidetect.manager.store import ProfileStore
+    from firefox_antidetect.manager.models import Profile
+    from firefox_antidetect.ui.main_window import MainWindow
     store = ProfileStore(tmp_path / "p.db")
     p = store.create(Profile.new(name="A", seed=1))
     w = MainWindow(store, launcher=None); qtbot.addWidget(w)

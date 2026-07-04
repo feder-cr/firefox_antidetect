@@ -1,5 +1,5 @@
-# PyInstaller spec — antidetect_firefox (onedir, cross-platform).
-# Build:  pyinstaller packaging/antidetect_firefox.spec
+# PyInstaller spec — firefox_antidetect (onedir, cross-platform).
+# Build:  pyinstaller packaging/firefox_antidetect.spec
 # The patched Firefox binary is NOT bundled — ensure_binary() downloads it on
 # first launch. invisible_core's data files (fpforge JSONs, font-map) are
 # collected so profile generation works inside the frozen app.
@@ -10,7 +10,7 @@ block_cipher = None
 datas = collect_data_files("invisible_core")  # _fpforge/data/*.json, data/font-map.json
 hiddenimports = (
     collect_submodules("invisible_core")
-    + collect_submodules("antidetect_firefox")
+    + collect_submodules("firefox_antidetect")
 )
 
 a = Analysis(
@@ -28,10 +28,10 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
     pyz, a.scripts, [],
     exclude_binaries=True,
-    name="antidetect_firefox",
+    name="firefox_antidetect",
     console=False,  # GUI app — no console window
 )
 coll = COLLECT(
     exe, a.binaries, a.zipfiles, a.datas,
-    name="antidetect_firefox",
+    name="firefox_antidetect",
 )

@@ -1,4 +1,4 @@
-# antidetect_firefox
+# firefox_antidetect
 
 Antidetect browser **profile manager** (manual use) for the patched Firefox,
 built on [`invisible_core`](https://github.com/feder-cr/invisible_core). Manage
@@ -15,7 +15,7 @@ pip install -e .            # pulls invisible-core (git) + platformdirs + PySide
 ## Run
 
 ```bash
-python -m antidetect_firefox
+python -m firefox_antidetect
 ```
 
 - The window lists your profiles. **New** creates one (name, seed, proxy,
@@ -31,7 +31,7 @@ python -m antidetect_firefox
 
 ## Where data lives
 
-`platformdirs.user_data_dir("antidetect-firefox")`:
+`platformdirs.user_data_dir("firefox-antidetect")`:
 - `profiles.db` — profile metadata (SQLite)
 - `profiles/<id>/` — the persistent Firefox profile (cookies, storage, `user.js`)
 
@@ -47,10 +47,10 @@ python -m pytest -m integration -q  # launches a real firefox-13 (needs the bina
 
 ```bash
 pip install pyinstaller
-pyinstaller packaging/antidetect_firefox.spec     # run once per OS
+pyinstaller packaging/firefox_antidetect.spec     # run once per OS
 ```
 
-Produces an onedir bundle under `dist/antidetect_firefox/` (Windows `.exe`,
+Produces an onedir bundle under `dist/firefox_antidetect/` (Windows `.exe`,
 Linux dir/AppImage-ready, macOS `.app`). The Firefox binary is **not** bundled —
 `ensure_binary()` downloads it on first launch. Code-signing and auto-update are
 future work.

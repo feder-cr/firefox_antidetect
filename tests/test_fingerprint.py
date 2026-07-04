@@ -1,4 +1,4 @@
-from antidetect_firefox.manager.fingerprint import fingerprint_summary
+from firefox_antidetect.manager.fingerprint import fingerprint_summary
 
 
 def test_summary_is_deterministic_and_has_headline_fields():

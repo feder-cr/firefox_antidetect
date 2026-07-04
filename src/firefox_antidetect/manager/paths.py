@@ -8,7 +8,7 @@ import platformdirs
 
 
 def app_data_dir(base: Optional[Path] = None) -> Path:
-    d = base if base is not None else Path(platformdirs.user_data_dir("antidetect-firefox"))
+    d = base if base is not None else Path(platformdirs.user_data_dir("firefox-antidetect"))
     d.mkdir(parents=True, exist_ok=True)
     return d
 

@@ -1,4 +1,4 @@
-from antidetect_firefox.manager.models import Profile
+from firefox_antidetect.manager.models import Profile
 
 
 def test_new_assigns_id_and_defaults():

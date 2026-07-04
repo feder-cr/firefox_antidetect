@@ -1,5 +1,5 @@
 def test_panel_renders_summary(qtbot):
-    from antidetect_firefox.ui.fingerprint_panel import FingerprintPanel
+    from firefox_antidetect.ui.fingerprint_panel import FingerprintPanel
     p = FingerprintPanel(); qtbot.addWidget(p)
     p.show_seed(42)
     txt = p.text_dump()
