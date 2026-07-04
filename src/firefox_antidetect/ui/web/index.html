@@ -197,13 +197,8 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
             <button data-v="sx" class="on" type="button">SX.ORG</button><button data-v="none" type="button">No proxy</button>
           </div>
         </div>
-        <div class="field sxonly"><label>Country</label>
+        <div class="field wide sxonly"><label>Country</label>
           <select id="f-country"><option value="US">United States</option><option value="DE">Germany</option><option value="GB">United Kingdom</option><option value="NL">Netherlands</option><option value="FR">France</option></select>
-        </div>
-        <div class="field sxonly"><label>Rotation</label>
-          <div class="seg" id="f-rotation" role="group" aria-label="Rotation">
-            <button data-v="sticky" class="on" type="button">Sticky</button><button data-v="request" type="button">On request</button>
-          </div>
         </div>
 
         <div class="card">
@@ -230,7 +225,7 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C9852F","#4F7CC9","#3F9D6B","#8A6FC0","#B36A4A","#6B7480","#B8506A","#3E8E8E"];
-let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", rotation: "sticky" };
+let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx" };
 
 /* --- pywebview bridge (api ready after `pywebviewready`) --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -295,10 +290,6 @@ function setProxyMode(m){
   $("#f-proxymode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
   document.querySelectorAll(".sxonly").forEach(e=>e.classList.toggle("hidden", m!=="sx"));
 }
-function setRotation(r){
-  state.rotation=r;
-  $("#f-rotation").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===r));
-}
 async function refreshFp(){
   const a=api(); if(!a) return;
   const seed=state.seedHex; if(!seed){ $("#fp-vid").textContent="—"; return; }
@@ -318,8 +309,7 @@ function openEdit(id){
   $("#f-name").value = p? p.name : "";
   const pr = p && p.proxy;
   setProxyMode(pr?"sx":(p?"none":"sx"));
-  if(pr){ $("#f-country").value = pr.country||pr.cc||"US"; setRotation(pr.rotation||"sticky"); }
-  else setRotation("sticky");
+  if(pr){ $("#f-country").value = pr.country||pr.cc||"US"; }
   $("#backdrop").classList.add("show");
   if(!p){ // fresh profile: mint one fixed identity now, anchored to it
     if(api()) api().new_seed().then(s=>{ state.seedHex=s.seed_hex; refreshFp(); });
@@ -329,7 +319,7 @@ function openEdit(id){
 function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=null; }
 function collect(){
   const proxy = state.proxymode==="sx"
-    ? { provider:"sx", country:$("#f-country").value, rotation:state.rotation }
+    ? { provider:"sx", country:$("#f-country").value, rotation:"sticky" }
     : null;
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
@@ -373,7 +363,6 @@ $("#m-cancel").addEventListener("click",closeModal);
 $("#m-save").addEventListener("click",()=>save(false));
 $("#m-savelaunch").addEventListener("click",()=>save(true));
 $("#f-proxymode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProxyMode(b.dataset.v); });
-$("#f-rotation").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setRotation(b.dataset.v); });
 $("#backdrop").addEventListener("click",e=>{ if(e.target===$("#backdrop")) closeModal(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("#backdrop").classList.contains("show")) closeModal(); });
 
