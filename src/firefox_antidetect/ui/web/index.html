@@ -206,6 +206,11 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
 .spinner.err{animation:none;border-color:var(--err-soft);border-top-color:var(--err)}
 @keyframes spin{to{transform:rotate(360deg)}}
+.dl-prog{width:100%;height:8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;margin-top:2px}
+.dl-bar{height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .2s ease}
+.dl-bar.indet{width:35%;animation:indet 1.15s ease-in-out infinite}
+@keyframes indet{0%{margin-left:-35%}100%{margin-left:100%}}
+.dl-pct{font:600 11.5px/1 var(--mono);color:var(--muted)}
 
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;max-width:80%;
   font:550 13px/1.35 var(--ui);padding:11px 15px;border-radius:10px;border:1px solid var(--line);
@@ -339,6 +344,8 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
         <div class="spinner" id="dl-spin"></div>
         <h3 id="dl-title">Setting up Firefox</h3>
         <p id="dl-msg">Downloading the browser. This happens once and can take a minute.</p>
+        <div class="dl-prog" id="dl-prog"><div class="dl-bar indet" id="dl-bar"></div></div>
+        <div class="dl-pct mono" id="dl-pct">Starting…</div>
         <div class="dl-acts" id="dl-acts" style="display:none">
           <button class="btn ghost" id="dl-close" type="button">Close</button>
           <button class="btn primary" id="dl-retry" type="button">Retry download</button>
@@ -631,10 +638,21 @@ function showDl(kind){
   $("#dl-msg").textContent = err
     ? "Could not download Firefox. Check your connection and try again."
     : "Downloading the browser. This happens once and can take a minute.";
+  $("#dl-prog").style.display = err ? "none" : "";
+  $("#dl-pct").style.display  = err ? "none" : "";
+  if(!err){ const b=$("#dl-bar"); b.classList.add("indet"); b.style.width=""; $("#dl-pct").textContent="Starting…"; }
   $("#dl-acts").style.display = err ? "flex" : "none";   // buttons only on error
   $("#dl-backdrop").classList.add("show");
 }
 function hideDl(){ $("#dl-backdrop").classList.remove("show"); }
+window.__dlProgress=function(done, total){
+  const bar=$("#dl-bar"), pct=$("#dl-pct"), mb=b=>(b/1048576).toFixed(0);
+  if(total>0){
+    const p=Math.min(100, Math.round(done*100/total));
+    bar.classList.remove("indet"); bar.style.width=p+"%";
+    pct.textContent=mb(done)+" / "+mb(total)+" MB · "+p+"%";
+  } else { pct.textContent=mb(done)+" MB"; }
+};
 window.__binaryReady=function(ok, ver){
   _binReady=!!ok;
   if(ok){ hideDl(); setBinStatus("ready", ver); }

@@ -225,10 +225,19 @@ class Api:
         if self._binary_cached():
             return {"ok": True, "cached": True, "version": _BINARY_VERSION}
 
+        last_pct = [-1]
+
+        def _progress(done: int, total: int) -> None:
+            # throttle to whole-percent steps so run_js isn't flooded (~100 calls)
+            pct = int(done * 100 / total) if total else -1
+            if pct != last_pct[0]:
+                last_pct[0] = pct
+                self._push(f"window.__dlProgress && window.__dlProgress({done}, {total})")
+
         def _run() -> None:
             ok = True
             try:
-                _ensure_binary()
+                _ensure_binary(progress=_progress)
             except Exception:
                 ok = False
             self._push(
