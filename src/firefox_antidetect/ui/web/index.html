@@ -179,6 +179,13 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .keyhint a{color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
 .keyhint.warn{border-color:var(--accent-line);color:var(--accent);background:var(--accent-soft)}
 .keyhint.warn a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.fieldhint{font-size:11.5px;color:var(--faint);margin-top:1px}
+.promo{display:flex;align-items:center;gap:14px;padding:13px 14px;border:1px solid var(--accent-line);border-radius:11px;background:var(--accent-soft)}
+.promo-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.promo-txt b{font:650 13px/1.25 var(--ui);color:var(--text)}
+.promo-txt span{font-size:12px;color:var(--muted)}
+.promo-txt code{font:600 11.5px/1 var(--mono);color:var(--accent);background:var(--panel);border:1px solid var(--accent-line);border-radius:5px;padding:2px 6px}
+.promo-cta{white-space:nowrap;text-decoration:none;flex:none}
 
 /* fingerprint strip - the identity a seed renders (compact, read-only) */
 .fpstrip{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
@@ -287,15 +294,22 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
   <div class="backdrop" id="px-backdrop">
     <div class="modal" style="width:min(460px,100%)" role="dialog" aria-modal="true" aria-label="Proxies">
       <div class="modal-head">
-        <div><div class="eyebrow">Proxies</div><h3>SX.ORG</h3></div>
+        <h3>SX.ORG proxies</h3>
         <div class="grow"></div>
         <button class="modal-x" id="px-x" aria-label="Close">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
       <div class="modal-body">
-        <div class="field"><label>API key</label><input class="mono" id="px-key" placeholder="paste your my.sx.org API key" autocomplete="off" spellcheck="false"></div>
-        <div class="keyhint">No account yet? Redeem code <b>STEALTH</b> for 3 GB free when you sign up.<span class="grow"></span><a href="https://sx.org/?c=invisible_playwright" target="_blank" rel="noopener">Sign up</a></div>
+        <div class="field">
+          <label>API key</label>
+          <input class="mono" id="px-key" placeholder="Paste your SX.ORG API key" autocomplete="off" spellcheck="false">
+          <div class="fieldhint">The only credential you set here. Country is chosen per profile.</div>
+        </div>
+        <div class="promo">
+          <div class="promo-txt"><b>Get 3 GB free</b><span>New to SX.ORG? Sign up with code <code>STEALTH</code>.</span></div>
+          <a class="btn primary promo-cta" href="https://sx.org/?c=invisible_playwright" target="_blank" rel="noopener">Sign up</a>
+        </div>
       </div>
       <div class="modal-foot">
         <button class="btn ghost" id="px-cancel" type="button">Close</button>
