@@ -140,7 +140,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .modal{width:min(560px,100%);max-height:calc(100vh - 52px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--modal-shadow)}
 .modal-head{display:flex;align-items:center;gap:12px;padding:17px 20px;border-bottom:1px solid var(--line)}
 .modal-head .eyebrow{font:600 10px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--accent)}
-.modal-head h3{margin:6px 0 0;font-size:16px;font-weight:650;letter-spacing:-.015em}
+.modal-head h3{margin:0;font-size:16px;font-weight:650;letter-spacing:-.015em}
 .modal-head .grow{flex:1}
 .modal-x{appearance:none;display:grid;place-items:center;width:31px;height:31px;border-radius:8px;border:1px solid transparent;background:none;color:var(--faint);cursor:pointer}
 .modal-x:hover{color:var(--text);background:var(--panel-2);border-color:var(--line)}
@@ -229,7 +229,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
   <div class="backdrop" id="backdrop">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Edit profile">
       <div class="modal-head">
-        <div><div class="eyebrow" id="m-eyebrow">New profile</div><h3 id="m-title">New profile</h3></div>
+        <h3 id="m-title">New profile</h3>
         <div class="grow"></div>
         <button class="modal-x" id="m-x" aria-label="Close">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -396,8 +396,7 @@ function openEdit(id){
   const p=id ? state.profiles.find(x=>x.id===id) : null;
   state.editing = id || null;
   state.seedHex = p ? p.seed_hex : null;
-  $("#m-eyebrow").textContent = p?"Edit profile":"New profile";
-  $("#m-title").textContent   = p? p.name : "New profile";
+  $("#m-title").textContent = p ? "Edit profile" : "New profile";
   $("#f-name").value = p? p.name : "";
   const pr = p && p.proxy;
   setProduct((pr && pr.product) || "residential");
