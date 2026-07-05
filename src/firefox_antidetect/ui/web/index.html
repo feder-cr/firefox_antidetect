@@ -125,6 +125,7 @@ tr:hover .rowbtn.ico2,tr.sel .rowbtn.ico2{opacity:1}
 .launch-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:84px;font:600 11.5px/1 var(--ui);padding:7px 12px;border-radius:8px;border:1px solid var(--live);color:var(--live);background:transparent;cursor:pointer;transition:background .12s,color .12s,border-color .12s}
 .launch-btn svg{width:13px;height:13px}
 .launch-btn:hover{background:var(--live);color:#04140E}
+.launch-btn[disabled]{opacity:.4;pointer-events:none;border-color:var(--line);color:var(--muted)}
 .launch-btn.stop{border-color:var(--line);color:var(--muted)}
 .launch-btn.stop:hover{background:var(--panel-2);color:var(--accent);border-color:var(--accent-line)}
 .empty{padding:70px 18px;text-align:center;color:var(--faint)}
@@ -331,6 +332,7 @@ let state = { profiles: [], selected: null, editing: null, seedHex: null, proxym
 let _countries = null;                       // cached SX directory countries [{id,name,code}]
 let _cityByName = {};                          // current country cities: nameLower -> numeric id
 let _sxWant = { country: "US", city: "" };     // desired selection when (re)loading the dropdowns
+let _binReady = false, _binTimer = null;        // binary prefetch gate: Launch stays disabled until it finishes
 
 /* --- pywebview bridge --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -391,7 +393,7 @@ function actsHtml(p){
     '<button class="rowbtn ico2 danger" data-act="del" title="Delete">'+ICO.trash+'</button>';
   const primary = p.running
     ? '<button class="launch-btn stop" data-act="stop">'+ICO.stop+'Stop</button>'
-    : '<button class="launch-btn" data-act="launch">'+ICO.play+'Launch</button>';
+    : '<button class="launch-btn" data-act="launch"'+(_binReady?'':' disabled title="Downloading Firefox…"')+'>'+ICO.play+'Launch</button>';
   return secondary + primary;   // edit/delete (hover) then the prominent Launch/Stop
 }
 function select(id){ state.selected=(state.selected===id?null:id); render(); }
@@ -448,8 +450,8 @@ async function refreshKeyhint(){
 /* A profile with SX selected but no API key can't launch - block Save/Launch. */
 function updateValidity(){
   const incomplete = (state.proxymode==="sx" && !state.sxConfigured);
-  $("#m-save").disabled = incomplete;
-  $("#m-savelaunch").disabled = incomplete;
+  $("#m-save").disabled = incomplete;                       // saving never needs the binary
+  $("#m-savelaunch").disabled = incomplete || !_binReady;   // launching does
 }
 async function refreshFp(){
   const a=api(); if(!a) return;
@@ -591,14 +593,19 @@ document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return;
   else if($("#backdrop").classList.contains("show")) closeModal(); });
 
 /* auto-download the Firefox binary in the background on startup (like fetch) */
-let _binReady=false, _binTimer=null;
 function setBinStatus(kind, ver){
   const el=$("#sb-bin"); if(!el) return;
   if(kind==="downloading"){ el.textContent="Downloading Firefox…"; el.style.color="var(--accent)"; }
   else if(kind==="error"){ el.textContent=(ver||"firefox")+" (download failed)"; el.style.color="var(--err)"; }
   else { el.textContent=ver||"firefox-14"; el.style.color=""; }
 }
-window.__binaryReady=function(ok, ver){ _binReady=true; clearTimeout(_binTimer); setBinStatus(ok?"ready":"error", ver); };
+window.__binaryReady=function(ok, ver){
+  _binReady=true;                        // prefetch finished (ok or not): stop blocking Launch
+  clearTimeout(_binTimer);
+  setBinStatus(ok?"ready":"error", ver);
+  render();                              // re-enable the row Launch buttons
+  if($("#backdrop").classList.contains("show")) updateValidity();
+};
 function prefetchBinary(){
   const a=api(); if(!a) return;
   _binTimer=setTimeout(()=>{ if(!_binReady) setBinStatus("downloading"); }, 800);  // only show if it actually downloads
