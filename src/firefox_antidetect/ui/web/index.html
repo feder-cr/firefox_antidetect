@@ -254,11 +254,6 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
           </div>
         </div>
         <div class="keyhint warn sxonly hidden" id="f-keyhint">No SX.ORG API key set<span class="grow"></span><a id="f-setupkey">Set it up</a></div>
-        <div class="field sxonly"><label>Product</label>
-          <div class="seg" id="f-product" role="group" aria-label="Product">
-            <button data-v="residential" class="on" type="button">Residential</button><button data-v="mobile" type="button">Mobile</button><button data-v="corporate" type="button">Corporate</button>
-          </div>
-        </div>
         <div class="field sxonly"><label>Country</label>
           <select id="f-country"><option value="US">United States</option><option value="DE">Germany</option><option value="GB">United Kingdom</option><option value="NL">Netherlands</option><option value="FR">France</option></select>
         </div>
@@ -301,7 +296,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C4842E","#4F7CC9","#2FA37A","#8A6FC0","#B36A4A","#5E6B78","#B8506A","#3E8E8E"];
-let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", product: "residential" };
+let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx" };
 
 /* --- pywebview bridge --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -368,8 +363,6 @@ async function refreshSxStatus(){
 }
 
 /* --- edit modal --- */
-function segOn(sel,v){ $(sel).querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); }
-function setProduct(p){ state.product=p; segOn("#f-product",p); }
 function setProxyMode(m){
   state.proxymode=m;
   $("#f-proxymode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
@@ -399,7 +392,6 @@ function openEdit(id){
   $("#m-title").textContent = p ? "Edit profile" : "New profile";
   $("#f-name").value = p? p.name : "";
   const pr = p && p.proxy;
-  setProduct((pr && pr.product) || "residential");
   $("#f-country").value = (pr && (pr.country||pr.cc)) || "US";
   setProxyMode(pr?"sx":(p?"none":"sx"));
   $("#backdrop").classList.add("show");
@@ -410,7 +402,7 @@ function openEdit(id){
 function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=null; }
 function collect(){
   const proxy = state.proxymode==="sx"
-    ? { provider:"sx", product:state.product, country:$("#f-country").value, session:"sticky" }
+    ? { provider:"sx", product:"residential", country:$("#f-country").value, session:"sticky" }
     : null;
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
@@ -477,7 +469,6 @@ $("#m-cancel").addEventListener("click",closeModal);
 $("#m-save").addEventListener("click",()=>save(false));
 $("#m-savelaunch").addEventListener("click",()=>save(true));
 $("#f-proxymode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProxyMode(b.dataset.v); });
-$("#f-product").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProduct(b.dataset.v); });
 $("#f-setupkey").addEventListener("click",openProxies);
 $("#backdrop").addEventListener("click",e=>{ if(e.target===$("#backdrop")) closeModal(); });
 $("#px-open").addEventListener("click",openProxies);
