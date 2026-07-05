@@ -97,6 +97,9 @@ def resolve_proxy(sx: Dict[str, Any], settings: Dict[str, Any]) -> Dict[str, str
     product = (sx.get("product") or "").strip().lower()
     if product:
         params["types"] = product   # otherwise SX uses the account's own product
+    city = str(sx.get("city") or "").strip()
+    if city:
+        params["city"] = city       # NOTE: SX may need a numeric city id (Dir API) — verify with a live key
     res = _get("/v2/proxy/search", api_key, params)
     endpoint = _first_endpoint(res)
     if not endpoint:
