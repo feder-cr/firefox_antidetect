@@ -207,11 +207,24 @@ class Api:
     def binary_version(self) -> str:
         return _BINARY_VERSION
 
+    def _binary_cached(self) -> bool:
+        import sys as _sys
+        try:
+            from invisible_core.download import cache_dir_for_version
+            from invisible_core.constants import BINARY_ENTRY_REL
+            rel = BINARY_ENTRY_REL.get(_sys.platform)
+            return bool(rel) and (cache_dir_for_version(_BINARY_VERSION) / rel).exists()
+        except Exception:
+            return False
+
     def prefetch_binary(self) -> Dict[str, Any]:
-        """Download the pinned Firefox binary in the background so it's ready
-        before the first Launch (automatic, like invisible_playwright's fetch).
-        ensure_binary is a no-op when it's already cached, so this is cheap on
-        every startup. The GeoIP db is fetched on demand at launch time."""
+        """Ensure the pinned Firefox binary is present. Returns immediately with
+        ``cached``: when False the download runs in a background thread and the
+        UI shows a blocking modal until ``window.__binaryReady`` fires (automatic,
+        like invisible_playwright's fetch). The GeoIP db is fetched on demand."""
+        if self._binary_cached():
+            return {"ok": True, "cached": True, "version": _BINARY_VERSION}
+
         def _run() -> None:
             ok = True
             try:
@@ -223,7 +236,7 @@ class Api:
                 f"{json.dumps(ok)}, {json.dumps(_BINARY_VERSION)})"
             )
         threading.Thread(target=_run, daemon=True).start()
-        return {"ok": True}
+        return {"ok": True, "cached": False, "version": _BINARY_VERSION}
 
     # ----- Proxies menu (global SX settings) -----
     def get_settings(self) -> Dict[str, Any]:

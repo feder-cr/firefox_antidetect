@@ -197,6 +197,16 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .modal-foot{display:flex;align-items:center;gap:8px;padding:15px 20px;border-top:1px solid var(--line);background:var(--panel-2)}
 .modal-foot .grow{flex:1}
 
+/* first-run download modal (blocking) */
+#dl-backdrop{z-index:55}
+.dl-body{padding:30px 26px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+.dl-body h3{margin:2px 0 0;font-size:16px;font-weight:650;letter-spacing:-.01em}
+.dl-body p{margin:0;font-size:13px;color:var(--muted);max-width:290px;line-height:1.5}
+.dl-acts{display:flex;gap:8px;margin-top:6px}
+.spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
+.spinner.err{animation:none;border-color:var(--err-soft);border-top-color:var(--err)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;max-width:80%;
   font:550 13px/1.35 var(--ui);padding:11px 15px;border-radius:10px;border:1px solid var(--line);
   background:var(--elev);color:var(--text);box-shadow:var(--modal-shadow);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
@@ -322,6 +332,21 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
     </div>
   </div>
 
+  <!-- first-run: blocking while the browser downloads -->
+  <div class="backdrop" id="dl-backdrop">
+    <div class="modal" style="width:min(400px,100%)" role="dialog" aria-modal="true" aria-label="Setting up Firefox">
+      <div class="dl-body">
+        <div class="spinner" id="dl-spin"></div>
+        <h3 id="dl-title">Setting up Firefox</h3>
+        <p id="dl-msg">Downloading the browser. This happens once and can take a minute.</p>
+        <div class="dl-acts" id="dl-acts" style="display:none">
+          <button class="btn ghost" id="dl-close" type="button">Close</button>
+          <button class="btn primary" id="dl-retry" type="button">Retry download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -332,7 +357,7 @@ let state = { profiles: [], selected: null, editing: null, seedHex: null, proxym
 let _countries = null;                       // cached SX directory countries [{id,name,code}]
 let _cityByName = {};                          // current country cities: nameLower -> numeric id
 let _sxWant = { country: "US", city: "" };     // desired selection when (re)loading the dropdowns
-let _binReady = false, _binTimer = null;        // binary prefetch gate: Launch stays disabled until it finishes
+let _binReady = false;                          // binary ready gate: blocking modal + Launch stay locked until true
 
 /* --- pywebview bridge --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -592,24 +617,38 @@ document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return;
   if($("#px-backdrop").classList.contains("show")) closeProxies();
   else if($("#backdrop").classList.contains("show")) closeModal(); });
 
-/* auto-download the Firefox binary in the background on startup (like fetch) */
+/* first-run auto-download of the Firefox binary, behind a blocking modal */
 function setBinStatus(kind, ver){
   const el=$("#sb-bin"); if(!el) return;
   if(kind==="downloading"){ el.textContent="Downloading Firefox…"; el.style.color="var(--accent)"; }
   else if(kind==="error"){ el.textContent=(ver||"firefox")+" (download failed)"; el.style.color="var(--err)"; }
   else { el.textContent=ver||"firefox-14"; el.style.color=""; }
 }
+function showDl(kind){
+  const err=(kind==="error");
+  $("#dl-spin").classList.toggle("err", err);
+  $("#dl-title").textContent = err ? "Download failed" : "Setting up Firefox";
+  $("#dl-msg").textContent = err
+    ? "Could not download Firefox. Check your connection and try again."
+    : "Downloading the browser. This happens once and can take a minute.";
+  $("#dl-acts").style.display = err ? "flex" : "none";   // buttons only on error
+  $("#dl-backdrop").classList.add("show");
+}
+function hideDl(){ $("#dl-backdrop").classList.remove("show"); }
 window.__binaryReady=function(ok, ver){
-  _binReady=true;                        // prefetch finished (ok or not): stop blocking Launch
-  clearTimeout(_binTimer);
-  setBinStatus(ok?"ready":"error", ver);
-  render();                              // re-enable the row Launch buttons
+  _binReady=!!ok;
+  if(ok){ hideDl(); setBinStatus("ready", ver); }
+  else { showDl("error"); setBinStatus("error", ver); }
+  render();
   if($("#backdrop").classList.contains("show")) updateValidity();
 };
-function prefetchBinary(){
+async function prefetchBinary(){
   const a=api(); if(!a) return;
-  _binTimer=setTimeout(()=>{ if(!_binReady) setBinStatus("downloading"); }, 800);  // only show if it actually downloads
-  try{ a.prefetch_binary(); }catch(e){}
+  let res; try{ res=await a.prefetch_binary(); }catch(e){ res=null; }
+  if(res && res.cached){ _binReady=true; setBinStatus("ready", res.version); render(); return; }
+  showDl("downloading"); setBinStatus("downloading");   // not cached -> block until __binaryReady
 }
+$("#dl-retry").addEventListener("click",()=>{ showDl("downloading"); setBinStatus("downloading"); const a=api(); if(a) a.prefetch_binary(); });
+$("#dl-close").addEventListener("click",hideDl);
 whenReady(()=>{ reload(); prefetchBinary(); });
 </script>
