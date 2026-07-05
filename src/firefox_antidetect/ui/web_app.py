@@ -13,6 +13,8 @@ from ..manager.store import ProfileStore
 from ..manager.models import Profile
 from ..manager import launcher as _launcher
 from ..manager import paths
+from ..manager import settings as _settings
+from ..manager import sx as _sx
 from ..manager.fingerprint import fingerprint_summary
 
 
@@ -140,8 +142,28 @@ class Api:
             self.store.touch(pid)
             return {"ok": True, "pid": handle.pid}
         except Exception as e:
-            # dead proxy / missing binary / geo failure surface here as a message
+            # dead proxy / missing binary / geo / SX-not-configured surface here
             return {"ok": False, "error": str(e)}
+
+    # ----- Proxies menu (global SX settings) -----
+    def get_settings(self) -> Dict[str, Any]:
+        return _settings.load_settings(self.base)
+
+    def save_settings(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            _settings.save_settings(data or {}, self.base)
+            return {"ok": True, "configured": self.sx_configured()["configured"]}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    def sx_configured(self) -> Dict[str, Any]:
+        """Whether an SX API key is set — drives the editor's 'set up key' banner
+        without exposing the key itself."""
+        return {"configured": bool(_sx.api_key_of(_settings.load_settings(self.base)))}
+
+    def sx_check_key(self, api_key: str) -> Dict[str, Any]:
+        """Validate a key against the SX API (used by the Proxies menu 'Test')."""
+        return _sx.check_api_key(api_key)
 
 
 def _index_html() -> str:

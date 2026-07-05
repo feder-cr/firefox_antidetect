@@ -20,6 +20,20 @@ from invisible_core._geo import SessionGeo as _SessionGeo  # for test stubs + ty
 
 from .models import Profile
 from . import paths
+from . import settings as _settings
+from . import sx as _sx
+
+
+def resolve_launch_proxy(proxy: Optional[Dict[str, Any]], base: Optional[Path] = None):
+    """A profile's ``proxy`` is an INTENT. Turn it into a concrete proxy dict:
+    ``None`` -> ``None``; an SX intent (``{"provider":"sx",...}``) -> a live
+    SOCKS5 endpoint via the SX API; an already-concrete ``{"server":...}`` dict
+    -> itself."""
+    if not proxy:
+        return None
+    if proxy.get("provider") == "sx":
+        return _sx.resolve_proxy(proxy, _settings.load_settings(base))
+    return proxy
 
 
 @dataclass
@@ -49,12 +63,13 @@ def _loc(locale: str, geo: "_SessionGeo", proxy: Optional[Dict[str, str]]) -> st
 
 def build_launch_plan(profile: Profile, base: Optional[Path] = None) -> LaunchPlan:
     binary = str(ensure_binary(profile.binary_ver) if profile.binary_ver else ensure_binary())
-    geo = prepare_session_geo(profile.timezone, profile.proxy)  # raises behind a dead proxy (by design)
+    rproxy = resolve_launch_proxy(profile.proxy, base)  # SX intent -> live SOCKS5 endpoint
+    geo = prepare_session_geo(profile.timezone, rproxy)  # raises behind a dead proxy (by design)
     fp = generate_profile(seed=profile.seed, pin=profile.pin)
     prefs = translate_profile_to_prefs(
-        fp, locale=_loc(profile.locale, geo, profile.proxy), timezone=geo.timezone
+        fp, locale=_loc(profile.locale, geo, rproxy), timezone=geo.timezone
     )
-    configure_proxy(profile.proxy, prefs)  # mutates prefs for SOCKS auth
+    configure_proxy(rproxy, prefs)  # mutates prefs for SOCKS auth
     pdir = paths.profile_dir(profile.id, base=base)
     write_user_js(pdir, prefs)
     env = build_launch_env(prefs, timezone=geo.timezone or None, egress_ip=geo.egress_ip)

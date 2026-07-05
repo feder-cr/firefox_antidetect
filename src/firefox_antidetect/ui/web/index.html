@@ -127,6 +127,10 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 .dice{flex:none;width:38px;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel-2);border-radius:8px;cursor:pointer;color:var(--muted)}
 .dice:hover{color:var(--accent);border-color:var(--accent)}
 .hidden{display:none!important}
+.keyhint{grid-column:1 / -1;display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 11px}
+.keyhint b{color:var(--run);font-weight:600}.keyhint .grow{flex:1}
+.keyhint a{color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
+.keyhint.warn{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 .card{grid-column:1 / -1;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel-2))}
 .card .top{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px dashed var(--line)}
 .card .top .lab{font:600 10px/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
@@ -156,6 +160,9 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
     <div class="brand"><b>firefox_antidetect</b></div>
     <div class="grow"></div>
     <span class="pillstat"><span class="dot"></span><span id="stat">0 profiles</span></span>
+    <button class="tgl" id="px-open" title="Proxies" aria-label="Proxies">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
     <button class="tgl" id="tgl" title="Toggle theme" aria-label="Toggle theme">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>
     </button>
@@ -197,8 +204,22 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
             <button data-v="sx" class="on" type="button">SX.ORG</button><button data-v="none" type="button">No proxy</button>
           </div>
         </div>
-        <div class="field wide sxonly"><label>Country</label>
+        <div class="keyhint warn sxonly hidden" id="f-keyhint">No SX.ORG API key set<span class="grow"></span><a id="f-setupkey">Set it up</a></div>
+        <div class="field wide sxonly"><label>Product</label>
+          <div class="seg" id="f-product" role="group" aria-label="Product">
+            <button data-v="residential" class="on" type="button">Residential</button><button data-v="mobile" type="button">Mobile</button><button data-v="corporate" type="button">Corporate</button>
+          </div>
+        </div>
+        <div class="field sxonly"><label>Country</label>
           <select id="f-country"><option value="US">United States</option><option value="DE">Germany</option><option value="GB">United Kingdom</option><option value="NL">Netherlands</option><option value="FR">France</option></select>
+        </div>
+        <div class="field sxonly"><label>Session</label>
+          <div class="seg" id="f-session" role="group" aria-label="Session">
+            <button data-v="sticky" class="on" type="button">Sticky</button><button data-v="rotating" type="button">Rotating</button>
+          </div>
+        </div>
+        <div class="field wide sxonly"><label>Traffic cap (GB) — optional</label>
+          <input class="mono" id="f-traffic" type="number" min="0" step="0.5" placeholder="no cap">
         </div>
 
         <div class="card">
@@ -219,13 +240,35 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
     </div>
   </div>
 
+  <div class="backdrop" id="px-backdrop">
+    <div class="modal" style="width:min(480px,100%)" role="dialog" aria-modal="true" aria-label="Proxies">
+      <div class="modal-head">
+        <div><div class="eyebrow">Proxies</div><h3>SX.ORG</h3></div>
+        <div class="grow"></div>
+        <button class="modal-x" id="px-x" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" style="grid-template-columns:1fr">
+        <div class="field wide"><label>API key</label><input class="mono" id="px-key" placeholder="paste your my.sx.org API key" autocomplete="off" spellcheck="false"></div>
+        <div class="keyhint">The API key is the only thing you set here. Country, session and product are per profile.<span class="grow"></span><a href="https://my.sx.org/api-help" target="_blank" rel="noopener">Where?</a></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn ghost" id="px-cancel" type="button">Close</button>
+        <div class="grow"></div>
+        <button class="btn" id="px-test" type="button">Test</button>
+        <button class="btn primary" id="px-save" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C9852F","#4F7CC9","#3F9D6B","#8A6FC0","#B36A4A","#6B7480","#B8506A","#3E8E8E"];
-let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx" };
+let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", product: "residential", session: "sticky" };
 
 /* --- pywebview bridge (api ready after `pywebviewready`) --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -285,10 +328,20 @@ async function reload(){
 }
 
 /* --- modal --- */
+function segOn(sel,v){ $(sel).querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); }
+function setProduct(p){ state.product=p; segOn("#f-product",p); }
+function setSession(s){ state.session=s; segOn("#f-session",s); }
 function setProxyMode(m){
   state.proxymode=m;
   $("#f-proxymode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
   document.querySelectorAll(".sxonly").forEach(e=>e.classList.toggle("hidden", m!=="sx"));
+  refreshKeyhint();
+}
+async function refreshKeyhint(){
+  const a=api(); const kh=$("#f-keyhint");
+  if(!a || state.proxymode!=="sx"){ kh.classList.add("hidden"); return; }
+  let c={configured:false}; try{ c=await a.sx_configured(); }catch(e){}
+  kh.classList.toggle("hidden", !!c.configured);
 }
 async function refreshFp(){
   const a=api(); if(!a) return;
@@ -308,8 +361,11 @@ function openEdit(id){
   $("#m-title").textContent   = p? p.name : "New profile";
   $("#f-name").value = p? p.name : "";
   const pr = p && p.proxy;
+  setProduct((pr && pr.product) || "residential");
+  setSession((pr && pr.session) || "sticky");
+  $("#f-country").value = (pr && (pr.country||pr.cc)) || "US";
+  $("#f-traffic").value = (pr && pr.traffic_gb) || "";
   setProxyMode(pr?"sx":(p?"none":"sx"));
-  if(pr){ $("#f-country").value = pr.country||pr.cc||"US"; }
   $("#backdrop").classList.add("show");
   if(!p){ // fresh profile: mint one fixed identity now, anchored to it
     if(api()) api().new_seed().then(s=>{ state.seedHex=s.seed_hex; refreshFp(); });
@@ -318,10 +374,35 @@ function openEdit(id){
 }
 function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=null; }
 function collect(){
+  const t = parseFloat($("#f-traffic").value);
   const proxy = state.proxymode==="sx"
-    ? { provider:"sx", country:$("#f-country").value, rotation:"sticky" }
+    ? { provider:"sx", product:state.product, country:$("#f-country").value,
+        session:state.session, traffic_gb:(isFinite(t) && t>0 ? t : null) }
     : null;
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
+}
+/* --- Proxies menu (global SX API key) --- */
+async function openProxies(){
+  const a=api(); if(!a) return;
+  let s={}; try{ s=await a.get_settings(); }catch(e){}
+  $("#px-key").value=(s.sx&&s.sx.api_key)||"";
+  $("#px-backdrop").classList.add("show"); $("#px-key").focus();
+}
+function closeProxies(){ $("#px-backdrop").classList.remove("show"); }
+async function saveProxies(){
+  const a=api(); if(!a) return;
+  const s=(await a.get_settings())||{};
+  s.sx=Object.assign({}, s.sx, {api_key:$("#px-key").value.trim()});
+  const res=await a.save_settings(s);
+  if(!res||!res.ok){ toast((res&&res.error)||"Save failed", true); return; }
+  toast("Saved"); closeProxies(); refreshKeyhint();
+}
+async function testKey(){
+  const a=api(); if(!a) return;
+  const key=$("#px-key").value.trim(); if(!key){ toast("Enter a key first", true); return; }
+  toast("Testing…");
+  let r; try{ r=await a.sx_check_key(key); }catch(e){ r=null; }
+  if(r&&r.ok) toast("API key valid"); else toast("Key check failed: "+((r&&r.detail)||"unknown"), true);
 }
 async function save(thenLaunch){
   const a=api(); if(!a) return;
@@ -363,8 +444,19 @@ $("#m-cancel").addEventListener("click",closeModal);
 $("#m-save").addEventListener("click",()=>save(false));
 $("#m-savelaunch").addEventListener("click",()=>save(true));
 $("#f-proxymode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProxyMode(b.dataset.v); });
+$("#f-product").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProduct(b.dataset.v); });
+$("#f-session").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setSession(b.dataset.v); });
+$("#f-setupkey").addEventListener("click",openProxies);
 $("#backdrop").addEventListener("click",e=>{ if(e.target===$("#backdrop")) closeModal(); });
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("#backdrop").classList.contains("show")) closeModal(); });
+$("#px-open").addEventListener("click",openProxies);
+$("#px-x").addEventListener("click",closeProxies);
+$("#px-cancel").addEventListener("click",closeProxies);
+$("#px-save").addEventListener("click",saveProxies);
+$("#px-test").addEventListener("click",testKey);
+$("#px-backdrop").addEventListener("click",e=>{ if(e.target===$("#px-backdrop")) closeProxies(); });
+document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return;
+  if($("#px-backdrop").classList.contains("show")) closeProxies();
+  else if($("#backdrop").classList.contains("show")) closeModal(); });
 
 whenReady(reload);
 </script>
