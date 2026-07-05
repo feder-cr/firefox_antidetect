@@ -1,10 +1,19 @@
 """Live-status API: statuses() reports the running map, stop_profile() is graceful."""
+import firefox_antidetect.ui.web_app as web_app
 from firefox_antidetect.manager.store import ProfileStore
 from firefox_antidetect.ui.web_app import Api
 
 
 def _api(tmp_path):
     return Api(ProfileStore(tmp_path / "p.db"), base=tmp_path)
+
+
+def test_binary_version_and_prefetch(tmp_path, monkeypatch):
+    # mock ensure_binary so the prefetch thread never hits the network in tests
+    monkeypatch.setattr(web_app, "_ensure_binary", lambda *a, **k: tmp_path / "firefox")
+    api = _api(tmp_path)
+    assert api.binary_version()  # non-empty version string
+    assert api.prefetch_binary()["ok"] is True
 
 
 def test_statuses_idle_for_never_launched(tmp_path):

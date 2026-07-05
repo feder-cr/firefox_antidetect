@@ -19,7 +19,7 @@ pip install git+https://github.com/feder-cr/firefox_antidetect.git
 python -m firefox_antidetect
 ```
 
-The patched Firefox binary is downloaded and cached on the first launch. Supported: **Windows**, **Linux**, **macOS**.
+Everything it needs is downloaded automatically, nothing to fetch by hand: the patched Firefox binary (once, SHA256-verified, cached) the moment the app opens, and the GeoIP database when a proxy needs it. Runs on **Windows**, **Linux** and **macOS**.
 
 Built on [invisible_core](https://github.com/feder-cr/invisible_core); it launches the binary directly, no Playwright.
 

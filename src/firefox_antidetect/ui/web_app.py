@@ -5,10 +5,14 @@ window and bridges it to the pure-Python manager lib via a JS<->Python API.
 unit-testable on its own (see tests/test_web_api.py) without opening a window."""
 from __future__ import annotations
 
+import json
 import secrets
 import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+from invisible_core import ensure_binary as _ensure_binary
+from invisible_core.constants import BINARY_VERSION as _BINARY_VERSION
 
 from ..manager.store import ProfileStore
 from ..manager.models import Profile
@@ -88,15 +92,19 @@ class Api:
 
         threading.Thread(target=_run, daemon=True).start()
 
-    def _notify(self) -> None:
-        """Nudge the UI to re-sync its running statuses (called off-thread)."""
+    def _push(self, js: str) -> None:
+        """Run JS in the window (off-thread safe); no-op if the window is gone."""
         try:
             import webview
             wins = getattr(webview, "windows", None)
             if wins:
-                wins[0].run_js("window.__syncStatuses && window.__syncStatuses()")
+                wins[0].run_js(js)
         except Exception:
             pass
+
+    def _notify(self) -> None:
+        """Nudge the UI to re-sync its running statuses (called off-thread)."""
+        self._push("window.__syncStatuses && window.__syncStatuses()")
 
     def _row(self, p: Profile) -> Dict[str, Any]:
         return {
@@ -195,6 +203,27 @@ class Api:
         """Lightweight per-profile running map for the UI's live refresh (no
         fingerprint recompute - cheap to poll)."""
         return {p.id: self._running(p.id) for p in self.store.list()}
+
+    def binary_version(self) -> str:
+        return _BINARY_VERSION
+
+    def prefetch_binary(self) -> Dict[str, Any]:
+        """Download the pinned Firefox binary in the background so it's ready
+        before the first Launch (automatic, like invisible_playwright's fetch).
+        ensure_binary is a no-op when it's already cached, so this is cheap on
+        every startup. The GeoIP db is fetched on demand at launch time."""
+        def _run() -> None:
+            ok = True
+            try:
+                _ensure_binary()
+            except Exception:
+                ok = False
+            self._push(
+                "window.__binaryReady && window.__binaryReady("
+                f"{json.dumps(ok)}, {json.dumps(_BINARY_VERSION)})"
+            )
+        threading.Thread(target=_run, daemon=True).start()
+        return {"ok": True}
 
     # ----- Proxies menu (global SX settings) -----
     def get_settings(self) -> Dict[str, Any]:

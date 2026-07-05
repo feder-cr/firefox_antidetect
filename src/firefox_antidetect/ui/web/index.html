@@ -244,7 +244,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
     <span class="sep"></span><span id="sb-total">0 identities</span>
     <span class="grow"></span>
     <span class="sb-sx" id="sb-sx"><span class="d"></span>No SX key</span>
-    <span class="mono">firefox-14</span>
+    <span class="mono" id="sb-bin">firefox-14</span>
   </div>
 
   <!-- edit / new profile -->
@@ -590,5 +590,19 @@ document.addEventListener("keydown",e=>{ if(e.key!=="Escape") return;
   if($("#px-backdrop").classList.contains("show")) closeProxies();
   else if($("#backdrop").classList.contains("show")) closeModal(); });
 
-whenReady(reload);
+/* auto-download the Firefox binary in the background on startup (like fetch) */
+let _binReady=false, _binTimer=null;
+function setBinStatus(kind, ver){
+  const el=$("#sb-bin"); if(!el) return;
+  if(kind==="downloading"){ el.textContent="Downloading Firefox…"; el.style.color="var(--accent)"; }
+  else if(kind==="error"){ el.textContent=(ver||"firefox")+" (download failed)"; el.style.color="var(--err)"; }
+  else { el.textContent=ver||"firefox-14"; el.style.color=""; }
+}
+window.__binaryReady=function(ok, ver){ _binReady=true; clearTimeout(_binTimer); setBinStatus(ok?"ready":"error", ver); };
+function prefetchBinary(){
+  const a=api(); if(!a) return;
+  _binTimer=setTimeout(()=>{ if(!_binReady) setBinStatus("downloading"); }, 800);  // only show if it actually downloads
+  try{ a.prefetch_binary(); }catch(e){}
+}
+whenReady(()=>{ reload(); prefetchBinary(); });
 </script>

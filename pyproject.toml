@@ -13,7 +13,11 @@ authors = [{ name = "feder-cr", email = "85809106+feder-cr@users.noreply.github.
 dependencies = [
     "invisible-core @ git+https://github.com/feder-cr/invisible_core.git",
     "platformdirs>=4",
-    "pywebview>=4.4",
+    # pywebview backend per OS: Windows -> WebView2, macOS -> WKWebView (native,
+    # no extra deps); Linux needs an explicit webview backend, so pull the Qt one
+    # (pip-installable, unlike the GTK/WebKit2GTK system packages).
+    "pywebview>=4.4; sys_platform != 'linux'",
+    "pywebview[qt]>=4.4; sys_platform == 'linux'",
 ]
 
 [project.optional-dependencies]
