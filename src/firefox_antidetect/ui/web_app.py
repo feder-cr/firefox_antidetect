@@ -56,7 +56,10 @@ class Api:
         self.store = store
         self.base = base
         self._handles: Dict[str, Any] = {}  # profile_id -> LaunchHandle
-        self.window = None  # pywebview window, set by run(); used to push UI updates
+        # NOTE: never store the pywebview Window as a public attribute here — it
+        # is the js_api object and pywebview would try to serialize the attribute
+        # into JS, recursing forever over the native .NET window. Reach the window
+        # via webview.windows in _notify() instead.
 
     # ----- helpers -----
     def _running(self, pid: str) -> bool:
@@ -87,11 +90,11 @@ class Api:
 
     def _notify(self) -> None:
         """Nudge the UI to re-sync its running statuses (called off-thread)."""
-        w = self.window
-        if w is None:
-            return
         try:
-            w.run_js("window.__syncStatuses && window.__syncStatuses()")
+            import webview
+            wins = getattr(webview, "windows", None)
+            if wins:
+                wins[0].run_js("window.__syncStatuses && window.__syncStatuses()")
         except Exception:
             pass
 
@@ -223,7 +226,7 @@ def run() -> int:
 
     store = ProfileStore(paths.db_path())
     api = Api(store, base=None)
-    api.window = webview.create_window(
+    webview.create_window(
         "firefox_antidetect",
         html=_index_html(),
         js_api=api,
