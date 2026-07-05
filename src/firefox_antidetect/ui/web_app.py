@@ -6,6 +6,7 @@ unit-testable on its own (see tests/test_web_api.py) without opening a window.""
 from __future__ import annotations
 
 import secrets
+import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -55,6 +56,7 @@ class Api:
         self.store = store
         self.base = base
         self._handles: Dict[str, Any] = {}  # profile_id -> LaunchHandle
+        self.window = None  # pywebview window, set by run(); used to push UI updates
 
     # ----- helpers -----
     def _running(self, pid: str) -> bool:
@@ -64,6 +66,34 @@ class Api:
         proc = getattr(h, "process", None)
         poll = getattr(proc, "poll", None)
         return poll() is None if callable(poll) else True
+
+    def _watch_exit(self, pid: str, handle: Any) -> None:
+        """Block a daemon thread on the launched process; when the user closes
+        the browser it exits and we push a UI refresh (event-driven, no polling
+        lag). A light JS poll is the safety net for anything this misses."""
+        proc = getattr(handle, "process", None)
+        wait = getattr(proc, "wait", None)
+        if not callable(wait):
+            return
+
+        def _run() -> None:
+            try:
+                proc.wait()
+            except Exception:
+                pass
+            self._notify()
+
+        threading.Thread(target=_run, daemon=True).start()
+
+    def _notify(self) -> None:
+        """Nudge the UI to re-sync its running statuses (called off-thread)."""
+        w = self.window
+        if w is None:
+            return
+        try:
+            w.run_js("window.__syncStatuses && window.__syncStatuses()")
+        except Exception:
+            pass
 
     def _row(self, p: Profile) -> Dict[str, Any]:
         return {
@@ -140,10 +170,28 @@ class Api:
             handle = _launcher.launch(p, base=self.base)
             self._handles[pid] = handle
             self.store.touch(pid)
+            self._watch_exit(pid, handle)  # push a refresh when the browser closes
             return {"ok": True, "pid": handle.pid}
         except Exception as e:
             # dead proxy / missing binary / geo / SX-not-configured surface here
             return {"ok": False, "error": str(e)}
+
+    def stop_profile(self, pid: str) -> Dict[str, Any]:
+        """Close a running profile's browser from the manager."""
+        h = self._handles.get(pid)
+        proc = getattr(h, "process", None)
+        poll = getattr(proc, "poll", None)
+        if proc is not None and callable(poll) and poll() is None:
+            try:
+                proc.terminate()
+            except Exception as e:
+                return {"ok": False, "error": str(e)}
+        return {"ok": True}
+
+    def statuses(self) -> Dict[str, bool]:
+        """Lightweight per-profile running map for the UI's live refresh (no
+        fingerprint recompute — cheap to poll)."""
+        return {p.id: self._running(p.id) for p in self.store.list()}
 
     # ----- Proxies menu (global SX settings) -----
     def get_settings(self) -> Dict[str, Any]:
@@ -175,7 +223,7 @@ def run() -> int:
 
     store = ProfileStore(paths.db_path())
     api = Api(store, base=None)
-    webview.create_window(
+    api.window = webview.create_window(
         "firefox_antidetect",
         html=_index_html(),
         js_api=api,

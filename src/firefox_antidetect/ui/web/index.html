@@ -107,6 +107,15 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--live-ring)}50%{box-shadow:0 0 0 5px transparent}}
 .sxchip{display:inline-block;font:700 9.5px/1 var(--ui);letter-spacing:.03em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:4px;padding:3px 5px;margin-right:6px;vertical-align:1px}
 .direct{display:inline-block;font:600 11px/1 var(--ui);color:var(--idle);background:var(--idle-soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+th.ta,.acts-cell{text-align:right;white-space:nowrap}
+.acts{display:inline-flex;gap:3px;justify-content:flex-end;opacity:.5;transition:opacity .12s}
+tr:hover .acts,tr.sel .acts{opacity:1}
+.rowbtn{appearance:none;display:grid;place-items:center;width:28px;height:28px;border-radius:7px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer}
+.rowbtn svg{width:15px;height:15px}
+.rowbtn:hover{background:var(--panel-2);border-color:var(--line);color:var(--text)}
+.rowbtn.go:hover{color:var(--live);border-color:var(--live)}
+.rowbtn.stop:hover{color:var(--accent);border-color:var(--accent-line)}
+.rowbtn.danger:hover{color:var(--err);border-color:var(--err)}
 .empty{padding:70px 18px;text-align:center;color:var(--faint)}
 .empty .ico{width:44px;height:44px;margin:0 auto 14px;border-radius:12px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--line);color:var(--faint)}
 .empty b{display:block;color:var(--text);font-size:15px;font-weight:600;margin-bottom:4px}
@@ -192,9 +201,6 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 
   <div class="toolbar">
     <button class="btn primary" id="b-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New profile</button>
-    <button class="btn" id="b-launch" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Launch</button>
-    <button class="btn ghost" id="b-edit" disabled>Edit</button>
-    <button class="btn ghost" id="b-del" disabled>Delete</button>
     <div class="grow"></div>
     <div class="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3" stroke-linecap="round"/></svg>
@@ -204,7 +210,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Profile</th><th>Fingerprint</th><th>Proxy</th><th>Status</th><th>Last used</th></tr></thead>
+      <thead><tr><th>Profile</th><th>Fingerprint</th><th>Proxy</th><th>Status</th><th>Last used</th><th class="ta">Actions</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
     <div class="empty hidden" id="empty">
@@ -325,6 +331,7 @@ function render(){
   const tb=$("#rows"); tb.innerHTML="";
   for(const p of list){
     const tr=document.createElement("tr");
+    tr.dataset.id=p.id;
     if(p.id===state.selected) tr.className="sel";
     tr.innerHTML =
       '<td><div class="pname"><span class="avatar" style="background:'+color(p.id)+'">'+esc(initials(p.name))+'</span>'+
@@ -332,9 +339,8 @@ function render(){
       '<td>'+fpCell(p.fp)+'</td>'+
       '<td>'+proxyCell(p)+'</td>'+
       '<td><span class="pill '+(p.running?'run':'idle')+'"><span class="d"></span>'+(p.running?'Running':'Idle')+'</span></td>'+
-      '<td class="mono" style="color:var(--muted)">'+esc(ago(p.last_used_at))+'</td>';
-    tr.addEventListener("click",()=>select(p.id));
-    tr.addEventListener("dblclick",()=>openEdit(p.id));
+      '<td class="mono" style="color:var(--muted)">'+esc(ago(p.last_used_at))+'</td>'+
+      '<td class="acts-cell"><div class="acts">'+actsHtml(p)+'</div></td>';
     tb.appendChild(tr);
   }
   $("#empty").classList.toggle("hidden", state.profiles.length>0);
@@ -342,8 +348,20 @@ function render(){
   $("#sb-live").classList.toggle("on", running>0);
   $("#sb-live").innerHTML='<span class="d"></span>'+running+" live";
   $("#sb-total").textContent=n+" "+(n===1?"identity":"identities");
-  const has=!!state.selected && list.some(p=>p.id===state.selected);
-  for(const id of ["b-launch","b-edit","b-del"]) $("#"+id).disabled=!has;
+}
+const ICO={
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  stop:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6"/></svg>',
+};
+function actsHtml(p){
+  const first = p.running
+    ? '<button class="rowbtn stop" data-act="stop" title="Stop">'+ICO.stop+'</button>'
+    : '<button class="rowbtn go" data-act="launch" title="Launch">'+ICO.play+'</button>';
+  return first
+    + '<button class="rowbtn" data-act="edit" title="Edit">'+ICO.edit+'</button>'
+    + '<button class="rowbtn danger" data-act="del" title="Delete">'+ICO.trash+'</button>';
 }
 function select(id){ state.selected=(state.selected===id?null:id); render(); }
 
@@ -425,12 +443,28 @@ async function launch(id){
   else toast("Launched (pid "+res.pid+")");
   await reload();
 }
-async function del(){
-  const a=api(); if(!a || !state.selected) return;
-  const p=state.profiles.find(x=>x.id===state.selected);
-  if(p && p.running){ toast("Stop the profile before deleting", true); return; }
-  await a.delete_profile(state.selected); state.selected=null; await reload(); toast("Deleted");
+async function stop(id){
+  const a=api(); if(!a || !id) return;
+  const res=await a.stop_profile(id);
+  if(res && !res.ok){ toast(res.error||"Stop failed", true); return; }
+  toast("Stopping…"); setTimeout(pollStatuses, 400);
 }
+async function del(id){
+  const a=api(); id=id||state.selected; if(!a || !id) return;
+  const p=state.profiles.find(x=>x.id===id);
+  if(p && p.running){ toast("Stop the profile before deleting", true); return; }
+  await a.delete_profile(id); if(state.selected===id) state.selected=null; await reload(); toast("Deleted");
+}
+/* --- live status: push from Python (window.__syncStatuses) + safety-net poll --- */
+async function pollStatuses(){
+  const a=api(); if(!a) return;
+  let m; try{ m=await a.statuses(); }catch(e){ return; }
+  let changed=false;
+  for(const p of state.profiles){ const r=!!m[p.id]; if(p.running!==r){ p.running=r; changed=true; } }
+  if(changed) render();
+}
+window.__syncStatuses = pollStatuses;
+setInterval(pollStatuses, 3000);
 
 /* --- proxies menu --- */
 async function openProxies(){
@@ -462,9 +496,18 @@ $("#tgl").addEventListener("click",()=>{ const r=document.documentElement;
   r.setAttribute("data-theme",cur==="dark"?"light":"dark"); });
 $("#q").addEventListener("input",render);
 $("#b-new").addEventListener("click",()=>openEdit(null));
-$("#b-edit").addEventListener("click",()=>state.selected&&openEdit(state.selected));
-$("#b-launch").addEventListener("click",()=>launch());
-$("#b-del").addEventListener("click",del);
+$("#rows").addEventListener("click",e=>{
+  const tr=e.target.closest("tr[data-id]"); if(!tr) return;
+  const id=tr.dataset.id, btn=e.target.closest("[data-act]");
+  if(btn){ e.stopPropagation();
+    const act=btn.dataset.act;
+    if(act==="launch") launch(id); else if(act==="stop") stop(id);
+    else if(act==="edit") openEdit(id); else if(act==="del") del(id);
+    return;
+  }
+  select(id);
+});
+$("#rows").addEventListener("dblclick",e=>{ const tr=e.target.closest("tr[data-id]"); if(tr) openEdit(tr.dataset.id); });
 $("#m-x").addEventListener("click",closeModal);
 $("#m-cancel").addEventListener("click",closeModal);
 $("#m-save").addEventListener("click",()=>save(false));
