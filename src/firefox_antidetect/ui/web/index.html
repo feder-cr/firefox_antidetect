@@ -4,172 +4,198 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root{
-  --ground:#F6F7F9; --panel:#FFFFFF; --panel-2:#FDFDFE;
-  --line:#E4E7EB; --line-2:#EDEFF2;
-  --text:#1A1F24; --muted:#5C6570; --faint:#8B939D;
-  --accent:#C9852F; --accent-ink:#3A2708; --accent-soft:#F6E9D4;
-  --run:#0F9D6B; --run-soft:#DFF3EA; --idle:#6B7480; --idle-soft:#EEF0F3;
+  --ground:#F4F6F8; --panel:#FFFFFF; --panel-2:#FAFBFC; --elev:#FFFFFF;
+  --line:#E4E8EC; --line-2:#EEF1F4;
+  --text:#141A20; --muted:#586470; --faint:#8B95A1;
+  --accent:#C4842E; --accent-ink:#3A2708; --accent-soft:#F7EAD6; --accent-line:#E7C795;
+  --live:#0E9E6E; --live-soft:#DCF3EB; --live-ring:rgba(14,158,110,.18);
+  --idle:#7A8590; --idle-soft:#EDF0F3;
   --err:#C4443C; --err-soft:#F7E3E1;
-  --shadow:0 1px 2px rgba(16,20,24,.06),0 8px 24px -12px rgba(16,20,24,.18);
-  --modal-shadow:0 24px 70px -24px rgba(16,20,24,.5),0 4px 12px rgba(16,20,24,.1);
+  --shadow:0 1px 2px rgba(16,20,24,.05),0 10px 26px -14px rgba(16,20,24,.22);
+  --modal-shadow:0 30px 80px -30px rgba(16,20,24,.55),0 6px 16px rgba(16,20,24,.10);
   --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
   --ui:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r:10px;
 }
 @media (prefers-color-scheme:dark){:root{
-  --ground:#0E1216; --panel:#141A20; --panel-2:#171E25;
-  --line:#242D36; --line-2:#1E262E;
-  --text:#E6E9EC; --muted:#96A0AB; --faint:#66717C;
-  --accent:#E0A24E; --accent-ink:#1B1305; --accent-soft:#33280F;
-  --run:#34D399; --run-soft:#123026; --idle:#8894A0; --idle-soft:#1C242C;
-  --err:#F17A72; --err-soft:#33191A;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -14px rgba(0,0,0,.6);
-  --modal-shadow:0 30px 80px -20px rgba(0,0,0,.75),0 4px 14px rgba(0,0,0,.5);
+  --ground:#0C1015; --panel:#141A21; --panel-2:#1A212A; --elev:#1F2934;
+  --line:#252F3A; --line-2:#1B242D;
+  --text:#E8ECF1; --muted:#98A3AF; --faint:#5F6B77;
+  --accent:#E0A24E; --accent-ink:#1A1204; --accent-soft:#2E2410; --accent-line:#4A3A1A;
+  --live:#35D6A4; --live-soft:#0F2A22; --live-ring:rgba(53,214,164,.16);
+  --idle:#8894A0; --idle-soft:#1B242D;
+  --err:#F17A72; --err-soft:#331A1A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 34px -16px rgba(0,0,0,.7);
+  --modal-shadow:0 34px 90px -24px rgba(0,0,0,.8),0 6px 18px rgba(0,0,0,.55);
 }}
 :root[data-theme="light"]{
-  --ground:#F6F7F9; --panel:#FFFFFF; --panel-2:#FDFDFE; --line:#E4E7EB; --line-2:#EDEFF2;
-  --text:#1A1F24; --muted:#5C6570; --faint:#8B939D;
-  --accent:#C9852F; --accent-ink:#3A2708; --accent-soft:#F6E9D4;
-  --run:#0F9D6B; --run-soft:#DFF3EA; --idle:#6B7480; --idle-soft:#EEF0F3;
-  --err:#C4443C; --err-soft:#F7E3E1;
-  --shadow:0 1px 2px rgba(16,20,24,.06),0 8px 24px -12px rgba(16,20,24,.18);
-  --modal-shadow:0 24px 70px -24px rgba(16,20,24,.5),0 4px 12px rgba(16,20,24,.1);
+  --ground:#F4F6F8; --panel:#FFFFFF; --panel-2:#FAFBFC; --elev:#FFFFFF;
+  --line:#E4E8EC; --line-2:#EEF1F4; --text:#141A20; --muted:#586470; --faint:#8B95A1;
+  --accent:#C4842E; --accent-ink:#3A2708; --accent-soft:#F7EAD6; --accent-line:#E7C795;
+  --live:#0E9E6E; --live-soft:#DCF3EB; --live-ring:rgba(14,158,110,.18);
+  --idle:#7A8590; --idle-soft:#EDF0F3; --err:#C4443C; --err-soft:#F7E3E1;
+  --shadow:0 1px 2px rgba(16,20,24,.05),0 10px 26px -14px rgba(16,20,24,.22);
+  --modal-shadow:0 30px 80px -30px rgba(16,20,24,.55),0 6px 16px rgba(16,20,24,.10);
 }
 :root[data-theme="dark"]{
-  --ground:#0E1216; --panel:#141A20; --panel-2:#171E25; --line:#242D36; --line-2:#1E262E;
-  --text:#E6E9EC; --muted:#96A0AB; --faint:#66717C;
-  --accent:#E0A24E; --accent-ink:#1B1305; --accent-soft:#33280F;
-  --run:#34D399; --run-soft:#123026; --idle:#8894A0; --idle-soft:#1C242C;
-  --err:#F17A72; --err-soft:#33191A;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -14px rgba(0,0,0,.6);
-  --modal-shadow:0 30px 80px -20px rgba(0,0,0,.75),0 4px 14px rgba(0,0,0,.5);
+  --ground:#0C1015; --panel:#141A21; --panel-2:#1A212A; --elev:#1F2934;
+  --line:#252F3A; --line-2:#1B242D; --text:#E8ECF1; --muted:#98A3AF; --faint:#5F6B77;
+  --accent:#E0A24E; --accent-ink:#1A1204; --accent-soft:#2E2410; --accent-line:#4A3A1A;
+  --live:#35D6A4; --live-soft:#0F2A22; --live-ring:rgba(53,214,164,.16);
+  --idle:#8894A0; --idle-soft:#1B242D; --err:#F17A72; --err-soft:#331A1A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 34px -16px rgba(0,0,0,.7);
+  --modal-shadow:0 34px 90px -24px rgba(0,0,0,.8),0 6px 18px rgba(0,0,0,.55);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--ground);color:var(--text);font-family:var(--ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;padding:22px;min-height:100vh;display:flex;flex-direction:column}
+body{background:var(--ground);color:var(--text);font-family:var(--ui);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  padding:20px;min-height:100vh;display:flex;flex-direction:column}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.win{position:relative;max-width:1120px;width:100%;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.win{position:relative;max-width:1080px;width:100%;margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
 
-.titlebar{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+/* titlebar */
+.titlebar{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-2)}
 .dots{display:flex;gap:7px}.dots i{width:11px;height:11px;border-radius:50%;display:block}
 .dots i:nth-child(1){background:#E5675E}.dots i:nth-child(2){background:#E7B14C}.dots i:nth-child(3){background:#57B85B}
-.brand{display:flex;align-items:baseline;gap:8px;margin-left:4px}
-.brand b{font-weight:650;letter-spacing:-.01em}
+.brand{display:flex;align-items:center;gap:8px;margin-left:5px;font:600 13.5px/1 var(--ui);letter-spacing:-.01em}
+.brand .mk{width:16px;height:16px;border-radius:5px;background:linear-gradient(135deg,var(--accent),#B8722A);box-shadow:0 0 0 1px var(--accent-line) inset}
+.brand span{color:var(--faint);font-weight:500}.brand b{font-weight:650}
 .titlebar .grow{flex:1}
-.pillstat{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
-.pillstat .dot{width:7px;height:7px;border-radius:50%;background:var(--run);box-shadow:0 0 0 3px var(--run-soft)}
-.tgl{appearance:none;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer}
-.tgl:hover{color:var(--text);border-color:var(--faint)}
+.icobtn{appearance:none;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);color:var(--muted);width:31px;height:31px;border-radius:8px;cursor:pointer}
+.icobtn:hover{color:var(--text);border-color:var(--faint)}
+.icobtn svg{width:16px;height:16px}
 
-.toolbar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line)}
-.btn{appearance:none;font:550 13px/1 var(--ui);display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer}
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.btn{appearance:none;font:550 13px/1 var(--ui);display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--text);cursor:pointer;transition:border-color .12s,background .12s}
 .btn:hover{border-color:var(--faint)}
 .btn svg{width:15px;height:15px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:650}
-.btn.primary:hover{filter:brightness(1.05)}
-.btn.ghost{color:var(--muted)}.btn.ghost:hover{color:var(--text)}
-.btn[disabled]{opacity:.45;pointer-events:none}
-.btn:focus-visible,.tgl:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:650;box-shadow:0 1px 0 rgba(0,0,0,.05)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{color:var(--muted);background:transparent;border-color:transparent}.btn.ghost:hover{color:var(--text);background:var(--panel-2)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn:focus-visible,.icobtn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .toolbar .grow{flex:1}
 .search{position:relative;display:flex;align-items:center}
-.search svg{position:absolute;left:10px;width:15px;height:15px;color:var(--faint)}
-.search input{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px 8px 30px;width:210px}
+.search svg{position:absolute;left:11px;width:15px;height:15px;color:var(--faint)}
+.search input{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px 9px 32px;width:220px}
 .search input::placeholder{color:var(--faint)}
 
+/* table */
 .tablewrap{overflow:auto;flex:1;min-height:0}
 table{width:100%;border-collapse:collapse;min-width:720px}
-thead th{position:sticky;top:0;z-index:1}
-thead th{text-align:left;font:600 10.5px/1 var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:11px 18px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--panel)}
-tbody td{padding:12px 18px;border-bottom:1px solid var(--line-2);vertical-align:middle}
-tbody tr{cursor:default}
+thead th{position:sticky;top:0;z-index:1;text-align:left;font:600 10px/1 var(--ui);letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
+  padding:12px 20px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--panel)}
+tbody td{padding:13px 20px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tbody tr{cursor:default;transition:background .1s}
 tbody tr:hover{background:var(--panel-2)}
-tbody tr.sel{background:var(--accent-soft)}
+tbody tr.sel{background:color-mix(in srgb,var(--accent-soft) 70%,transparent)}
 tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
-.pname{display:flex;align-items:center;gap:11px}
-.avatar{width:30px;height:30px;border-radius:8px;flex:none;display:grid;place-items:center;font:650 12px/1 var(--ui);color:#fff}
+.pname{display:flex;align-items:center;gap:12px}
+.avatar{width:32px;height:32px;border-radius:9px;flex:none;display:grid;place-items:center;font:650 12px/1 var(--ui);color:#fff;
+  box-shadow:0 0 0 1px rgba(0,0,0,.12) inset,0 1px 2px rgba(0,0,0,.18)}
 .pn b{font-weight:600;letter-spacing:-.01em}
-.pn small{display:block;color:var(--faint);font-size:11.5px;margin-top:2px}
-.cell-sub{color:var(--muted);font-size:12px;margin-top:2px}
-.sep{display:inline-block;width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.4;vertical-align:middle;margin:0 7px}
-.cc{display:inline-block;font:650 9.5px/1 var(--ui);letter-spacing:.04em;color:var(--muted);background:var(--idle-soft);border:1px solid var(--line);border-radius:4px;padding:3px 4px;margin-right:7px;vertical-align:1px}
-.pill{display:inline-flex;align-items:center;gap:6px;font:600 11px/1 var(--ui);padding:5px 9px;border-radius:999px}
-.pill .d{width:6px;height:6px;border-radius:50%}
-.pill.run{background:var(--run-soft);color:var(--run)}.pill.run .d{background:var(--run)}
-.pill.idle{background:var(--idle-soft);color:var(--idle)}.pill.idle .d{background:var(--idle)}
-.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px;width:max-content}
-.seg button{appearance:none;border:0;background:none;font:600 12.5px/1 var(--ui);color:var(--muted);padding:8px 14px;border-radius:6px;cursor:pointer}
-.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.pn small{display:block;color:var(--faint);font-size:11.5px;margin-top:2px;font-family:var(--mono)}
+.cell-sub{color:var(--muted);font-size:11.5px;margin-top:3px}
+.sep{display:inline-block;width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.4;vertical-align:middle;margin:0 8px}
+.cc{display:inline-block;font:650 9.5px/1 var(--ui);letter-spacing:.04em;color:var(--muted);background:var(--idle-soft);border:1px solid var(--line);border-radius:4px;padding:3px 5px;margin-right:6px;vertical-align:1px}
+.pill{display:inline-flex;align-items:center;gap:7px;font:600 11px/1 var(--ui);padding:5px 10px;border-radius:999px}
+.pill .d{width:7px;height:7px;border-radius:50%;flex:none}
+.pill.run{color:var(--live);background:var(--live-soft)}.pill.run .d{background:var(--live);box-shadow:0 0 0 3px var(--live-ring);animation:pulse 2.2s ease-in-out infinite}
+.pill.idle{color:var(--idle);background:var(--idle-soft)}.pill.idle .d{background:var(--idle)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--live-ring)}50%{box-shadow:0 0 0 5px transparent}}
+.sxchip{display:inline-block;font:700 9.5px/1 var(--ui);letter-spacing:.03em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:4px;padding:3px 5px;margin-right:6px;vertical-align:1px}
+.direct{display:inline-block;font:600 11px/1 var(--ui);color:var(--idle);background:var(--idle-soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+.empty{padding:70px 18px;text-align:center;color:var(--faint)}
+.empty .ico{width:44px;height:44px;margin:0 auto 14px;border-radius:12px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--line);color:var(--faint)}
+.empty b{display:block;color:var(--text);font-size:15px;font-weight:600;margin-bottom:4px}
+
+/* status bar */
+.statusbar{display:flex;align-items:center;gap:0;padding:9px 16px;border-top:1px solid var(--line);background:var(--panel-2);
+  font:500 11.5px/1 var(--ui);color:var(--muted)}
+.statusbar .grow{flex:1}
+.statusbar .mono{font-size:11px;color:var(--faint)}
+.sb-live{display:inline-flex;align-items:center;gap:7px}
+.sb-live .d{width:7px;height:7px;border-radius:50%;background:var(--idle)}
+.sb-live.on .d{background:var(--live);box-shadow:0 0 0 3px var(--live-ring)}
+.sb-sx{display:inline-flex;align-items:center;gap:6px;margin-right:14px}
+.sb-sx .d{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.sb-sx.on{color:var(--live)}.sb-sx.on .d{background:var(--live)}
+
+/* segmented control */
+.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;width:100%}
+.seg button{flex:1;appearance:none;border:0;background:none;font:600 12.5px/1 var(--ui);color:var(--muted);padding:9px 12px;border-radius:6px;cursor:pointer;transition:background .12s,color .12s}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.14)}
 .seg.sx button.on{color:var(--accent)}
-.sxchip{display:inline-block;font:700 9.5px/1 var(--ui);letter-spacing:.03em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);border-radius:4px;padding:3px 5px;margin-right:7px;vertical-align:1px}
-.direct{display:inline-block;font:600 11px/1 var(--ui);color:var(--idle);background:var(--idle-soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
-.empty{padding:54px 18px;text-align:center;color:var(--faint)}
-.empty b{display:block;color:var(--muted);font-size:15px;margin-bottom:4px}
+select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 30px 10px 11px;width:100%;appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),linear-gradient(135deg,var(--faint) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 19px,calc(100% - 11px) 19px;background-size:5px 5px;background-repeat:no-repeat}
 
-.field select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:9px 28px 9px 10px;appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),linear-gradient(135deg,var(--faint) 50%,transparent 50%);background-position:calc(100% - 15px) 18px,calc(100% - 10px) 18px;background-size:5px 5px;background-repeat:no-repeat}
-
-/* centered modal editor + blurred backdrop */
+/* modal */
 .backdrop{position:fixed;inset:0;z-index:40;display:none;place-items:center;padding:26px;
-  background:rgba(9,12,16,.42);backdrop-filter:blur(7px) saturate(.9);-webkit-backdrop-filter:blur(7px) saturate(.9)}
+  background:rgba(8,11,15,.5);backdrop-filter:blur(6px) saturate(.92);-webkit-backdrop-filter:blur(6px) saturate(.92)}
 .backdrop.show{display:grid}
-.modal{width:min(560px,100%);max-height:calc(100vh - 52px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--modal-shadow)}
-.modal-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
-.modal-head .eyebrow{font:600 10px/1 var(--ui);letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
-.modal-head h3{margin:5px 0 0;font-size:15px;font-weight:650;letter-spacing:-.01em}
+.modal{width:min(560px,100%);max-height:calc(100vh - 52px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--modal-shadow)}
+.modal-head{display:flex;align-items:center;gap:12px;padding:17px 20px;border-bottom:1px solid var(--line)}
+.modal-head .eyebrow{font:600 10px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--accent)}
+.modal-head h3{margin:6px 0 0;font-size:16px;font-weight:650;letter-spacing:-.015em}
 .modal-head .grow{flex:1}
-.modal-x{appearance:none;display:grid;place-items:center;width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:none;color:var(--faint);cursor:pointer}
+.modal-x{appearance:none;display:grid;place-items:center;width:31px;height:31px;border-radius:8px;border:1px solid transparent;background:none;color:var(--faint);cursor:pointer}
 .modal-x:hover{color:var(--text);background:var(--panel-2);border-color:var(--line)}
-.modal-body{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:13px}
+.section-lab{font:600 10px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:10px;margin-top:3px}
+.section-lab::after{content:"";flex:1;height:1px;background:var(--line)}
 .field{display:flex;flex-direction:column;gap:6px}
-.field.wide{grid-column:1 / -1}
 .field label{font-size:12px;color:var(--muted);font-weight:500}
-.field input{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.field input{font:400 13.5px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px}
 .field input.mono{font-family:var(--mono)}
-.seedrow{display:flex;gap:8px}.seedrow input{flex:1}
-.dice{flex:none;width:38px;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel-2);border-radius:8px;cursor:pointer;color:var(--muted)}
-.dice:hover{color:var(--accent);border-color:var(--accent)}
+.field input::placeholder{color:var(--faint)}
 .hidden{display:none!important}
-.keyhint{grid-column:1 / -1;display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px 11px}
-.keyhint b{color:var(--run);font-weight:600}.keyhint .grow{flex:1}
+.keyhint{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+.keyhint b{color:var(--live);font-weight:600}.keyhint .grow{flex:1}
 .keyhint a{color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
-.keyhint.warn{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.card{grid-column:1 / -1;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel-2))}
-.card .top{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px dashed var(--line)}
-.card .top .lab{font:600 10px/1 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.card .top .vid{font:600 11px/1 var(--mono);color:var(--accent)}
-.card .grid{display:grid;grid-template-columns:1fr 1fr}
-.card .kv{padding:11px 14px;border-bottom:1px solid var(--line-2)}
-.card .kv:nth-child(odd){border-right:1px solid var(--line-2)}
-.card .kv.span{grid-column:1 / -1;border-right:none;border-bottom:none}
-.card .kv .k{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
-.card .kv .v{font:500 12.5px/1.35 var(--mono);margin-top:4px;color:var(--text)}
-.card .foot{padding:10px 14px;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
-.card .foot .d{width:6px;height:6px;border-radius:50%;background:var(--run)}
-.modal-foot{display:flex;align-items:center;gap:8px;padding:14px 18px;border-top:1px solid var(--line);background:var(--panel-2)}
+.keyhint.warn{border-color:var(--accent-line);color:var(--accent);background:var(--accent-soft)}
+.keyhint.warn a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+
+/* fingerprint "face" card — the identity a seed renders */
+.face{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel-2)}
+.face-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--line)}
+.face-head .l{font:600 10px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
+.face-head .id{font:600 11.5px/1 var(--mono);color:var(--accent)}
+.face-tiles{display:grid;grid-template-columns:1.4fr 1fr .7fr}
+.tile{padding:12px 14px;border-right:1px solid var(--line-2);min-width:0}
+.tile:last-child{border-right:0}
+.tile .tk{display:block;font:600 9.5px/1 var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.tile .tv{font:500 13px/1.3 var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.modal-foot{display:flex;align-items:center;gap:8px;padding:15px 20px;border-top:1px solid var(--line);background:var(--panel-2)}
 .modal-foot .grow{flex:1}
 
-.toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;max-width:80%;
-  font:550 13px/1.35 var(--ui);padding:10px 14px;border-radius:9px;border:1px solid var(--line);
-  background:var(--panel);color:var(--text);box-shadow:var(--modal-shadow);opacity:0;pointer-events:none;transition:opacity .18s}
-.toast.show{opacity:1}
-.toast.err{border-color:var(--err);color:var(--err);background:var(--err-soft)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:60;max-width:80%;
+  font:550 13px/1.35 var(--ui);padding:11px 15px;border-radius:10px;border:1px solid var(--line);
+  background:var(--elev);color:var(--text);box-shadow:var(--modal-shadow);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-2px)}
+.toast.err{border-color:var(--err);color:var(--err)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
 <div class="win" role="application" aria-label="firefox_antidetect">
   <div class="titlebar">
     <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="brand"><b>firefox_antidetect</b></div>
+    <div class="brand"><span class="mk"></span><b>firefox</b><span>_antidetect</span></div>
     <div class="grow"></div>
-    <span class="pillstat"><span class="dot"></span><span id="stat">0 profiles</span></span>
-    <button class="tgl" id="px-open" title="Proxies" aria-label="Proxies">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <button class="icobtn" id="px-open" title="Proxies" aria-label="Proxies">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
-    <button class="tgl" id="tgl" title="Toggle theme" aria-label="Toggle theme">
+    <button class="icobtn" id="tgl" title="Toggle theme" aria-label="Toggle theme">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg>
     </button>
   </div>
 
   <div class="toolbar">
-    <button class="btn primary" id="b-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New profile</button>
+    <button class="btn primary" id="b-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>New profile</button>
     <button class="btn" id="b-launch" disabled><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Launch</button>
     <button class="btn ghost" id="b-edit" disabled>Edit</button>
     <button class="btn ghost" id="b-del" disabled>Delete</button>
@@ -185,9 +211,21 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
       <thead><tr><th>Profile</th><th>Fingerprint</th><th>Proxy</th><th>Status</th><th>Last used</th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
-    <div class="empty hidden" id="empty"><b>No profiles yet</b>Create your first identity with “New profile”.</div>
+    <div class="empty hidden" id="empty">
+      <div class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0" stroke-linecap="round"/></svg></div>
+      <b>No profiles yet</b>Create your first identity with “New profile”.
+    </div>
   </div>
 
+  <div class="statusbar">
+    <span class="sb-live" id="sb-live"><span class="d"></span>0 live</span>
+    <span class="sep"></span><span id="sb-total">0 identities</span>
+    <span class="grow"></span>
+    <span class="sb-sx" id="sb-sx"><span class="d"></span>No SX key</span>
+    <span class="mono">firefox-14</span>
+  </div>
+
+  <!-- edit / new profile -->
   <div class="backdrop" id="backdrop">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Edit profile">
       <div class="modal-head">
@@ -198,29 +236,31 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
         </button>
       </div>
       <div class="modal-body">
-        <div class="field wide"><label>Name</label><input id="f-name" placeholder="Retail US - A"></div>
-        <div class="field wide"><label>Proxy</label>
+        <div class="section-lab">Identity</div>
+        <div class="field"><label>Name</label><input id="f-name" placeholder="Retail US - A"></div>
+        <div class="face">
+          <div class="face-head"><span class="l">Fingerprint</span><span class="id" id="fp-vid">—</span></div>
+          <div class="face-tiles">
+            <div class="tile"><span class="tk">GPU</span><span class="tv" id="fp-gpu">—</span></div>
+            <div class="tile"><span class="tk">Display</span><span class="tv" id="fp-screen">—</span></div>
+            <div class="tile"><span class="tk">Cores</span><span class="tv" id="fp-hw">—</span></div>
+          </div>
+        </div>
+
+        <div class="section-lab">Connection</div>
+        <div class="field"><label>Proxy</label>
           <div class="seg sx" id="f-proxymode" role="group" aria-label="Proxy mode">
             <button data-v="sx" class="on" type="button">SX.ORG</button><button data-v="none" type="button">No proxy</button>
           </div>
         </div>
         <div class="keyhint warn sxonly hidden" id="f-keyhint">No SX.ORG API key set<span class="grow"></span><a id="f-setupkey">Set it up</a></div>
-        <div class="field wide sxonly"><label>Product</label>
+        <div class="field sxonly"><label>Product</label>
           <div class="seg" id="f-product" role="group" aria-label="Product">
             <button data-v="residential" class="on" type="button">Residential</button><button data-v="mobile" type="button">Mobile</button><button data-v="corporate" type="button">Corporate</button>
           </div>
         </div>
-        <div class="field wide sxonly"><label>Country</label>
+        <div class="field sxonly"><label>Country</label>
           <select id="f-country"><option value="US">United States</option><option value="DE">Germany</option><option value="GB">United Kingdom</option><option value="NL">Netherlands</option><option value="FR">France</option></select>
-        </div>
-
-        <div class="card">
-          <div class="top"><span class="lab">Fingerprint preview</span><span class="vid" id="fp-vid">—</span></div>
-          <div class="grid">
-            <div class="kv"><div class="k">GPU</div><div class="v" id="fp-gpu">—</div></div>
-            <div class="kv"><div class="k">Screen</div><div class="v" id="fp-screen">—</div></div>
-            <div class="kv span"><div class="k">Hardware</div><div class="v" id="fp-hw">—</div></div>
-          </div>
         </div>
       </div>
       <div class="modal-foot">
@@ -232,8 +272,9 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
     </div>
   </div>
 
+  <!-- proxies menu -->
   <div class="backdrop" id="px-backdrop">
-    <div class="modal" style="width:min(480px,100%)" role="dialog" aria-modal="true" aria-label="Proxies">
+    <div class="modal" style="width:min(460px,100%)" role="dialog" aria-modal="true" aria-label="Proxies">
       <div class="modal-head">
         <div><div class="eyebrow">Proxies</div><h3>SX.ORG</h3></div>
         <div class="grow"></div>
@@ -241,9 +282,9 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
-      <div class="modal-body" style="grid-template-columns:1fr">
-        <div class="field wide"><label>API key</label><input class="mono" id="px-key" placeholder="paste your my.sx.org API key" autocomplete="off" spellcheck="false"></div>
-        <div class="keyhint">The API key is the only thing you set here. Country, session and product are per profile.<span class="grow"></span><a href="https://my.sx.org/api-help" target="_blank" rel="noopener">Where?</a></div>
+      <div class="modal-body">
+        <div class="field"><label>API key</label><input class="mono" id="px-key" placeholder="paste your my.sx.org API key" autocomplete="off" spellcheck="false"></div>
+        <div class="keyhint">The API key is the only thing you set here — country and product are per profile.<span class="grow"></span><a href="https://my.sx.org/api-help" target="_blank" rel="noopener">Where?</a></div>
       </div>
       <div class="modal-foot">
         <button class="btn ghost" id="px-cancel" type="button">Close</button>
@@ -259,10 +300,10 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 
 <script>
 const $ = s => document.querySelector(s);
-const AVATAR = ["#C9852F","#4F7CC9","#3F9D6B","#8A6FC0","#B36A4A","#6B7480","#B8506A","#3E8E8E"];
+const AVATAR = ["#C4842E","#4F7CC9","#2FA37A","#8A6FC0","#B36A4A","#5E6B78","#B8506A","#3E8E8E"];
 let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", product: "residential" };
 
-/* --- pywebview bridge (api ready after `pywebviewready`) --- */
+/* --- pywebview bridge --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
 function whenReady(fn){ if(api()) return fn(); window.addEventListener('pywebviewready', fn, {once:true}); }
 
@@ -284,7 +325,7 @@ function proxyCell(p){
 function fpCell(fp){
   if(!fp || fp.error) return '<span class="mono" style="color:var(--faint)">—</span>';
   const gpu=(fp.gpu_renderer||fp.gpu_vendor||"GPU");
-  return '<span class="mono">'+esc(gpu)+' · '+esc(fp.screen||"")+'</span><div class="cell-sub mono">'+esc(fp.hardware_concurrency||"?")+' cores</div>';
+  return '<span class="mono">'+esc(gpu)+' · '+esc((fp.screen||"").replace("x"," × "))+'</span><div class="cell-sub mono">'+esc(fp.hardware_concurrency||"?")+' cores</div>';
 }
 function render(){
   const q=$("#q").value.trim().toLowerCase();
@@ -293,21 +334,22 @@ function render(){
   for(const p of list){
     const tr=document.createElement("tr");
     if(p.id===state.selected) tr.className="sel";
-    tr.dataset.id=p.id;
     tr.innerHTML =
       '<td><div class="pname"><span class="avatar" style="background:'+color(p.id)+'">'+esc(initials(p.name))+'</span>'+
-        '<span class="pn"><b>'+esc(p.name)+'</b><small>seed '+esc(p.seed_hex)+'</small></span></div></td>'+
+        '<span class="pn"><b>'+esc(p.name)+'</b><small>'+esc(p.seed_hex)+'</small></span></div></td>'+
       '<td>'+fpCell(p.fp)+'</td>'+
       '<td>'+proxyCell(p)+'</td>'+
       '<td><span class="pill '+(p.running?'run':'idle')+'"><span class="d"></span>'+(p.running?'Running':'Idle')+'</span></td>'+
-      '<td class="mono">'+esc(ago(p.last_used_at))+'</td>';
+      '<td class="mono" style="color:var(--muted)">'+esc(ago(p.last_used_at))+'</td>';
     tr.addEventListener("click",()=>select(p.id));
     tr.addEventListener("dblclick",()=>openEdit(p.id));
     tb.appendChild(tr);
   }
   $("#empty").classList.toggle("hidden", state.profiles.length>0);
-  const running=state.profiles.filter(p=>p.running).length;
-  $("#stat").textContent=(running?running+" running · ":"")+state.profiles.length+" profile"+(state.profiles.length===1?"":"s");
+  const running=state.profiles.filter(p=>p.running).length, n=state.profiles.length;
+  $("#sb-live").classList.toggle("on", running>0);
+  $("#sb-live").innerHTML='<span class="d"></span>'+running+" live";
+  $("#sb-total").textContent=n+" "+(n===1?"identity":"identities");
   const has=!!state.selected && list.some(p=>p.id===state.selected);
   for(const id of ["b-launch","b-edit","b-del"]) $("#"+id).disabled=!has;
 }
@@ -316,10 +358,16 @@ function select(id){ state.selected=(state.selected===id?null:id); render(); }
 async function reload(){
   const a=api(); if(!a) return;
   state.profiles = await a.list_profiles();
-  render();
+  render(); refreshSxStatus();
+}
+async function refreshSxStatus(){
+  const a=api(); if(!a) return;
+  let c={configured:false}; try{ c=await a.sx_configured(); }catch(e){}
+  const el=$("#sb-sx"); el.classList.toggle("on", !!c.configured);
+  el.innerHTML='<span class="d"></span>'+(c.configured?"SX key set":"No SX key");
 }
 
-/* --- modal --- */
+/* --- edit modal --- */
 function segOn(sel,v){ $(sel).querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); }
 function setProduct(p){ state.product=p; segOn("#f-product",p); }
 function setProxyMode(m){
@@ -339,15 +387,15 @@ async function refreshFp(){
   const seed=state.seedHex; if(!seed){ $("#fp-vid").textContent="—"; return; }
   let fp; try{ fp=await a.fingerprint_preview(seed); }catch(e){ return; }
   if(!fp || fp.error){ $("#fp-gpu").textContent=$("#fp-screen").textContent=$("#fp-hw").textContent="—"; $("#fp-vid").textContent="—"; return; }
-  $("#fp-gpu").innerHTML=esc(fp.gpu_vendor||"")+"<br>"+esc(fp.gpu_renderer||"");
-  $("#fp-screen").textContent=fp.screen||"—";
-  $("#fp-hw").textContent=(fp.hardware_concurrency||"?")+" cores";
-  $("#fp-vid").textContent=seed;   // the anchored identity (read-only)
+  $("#fp-gpu").textContent=fp.gpu_renderer||fp.gpu_vendor||"—";
+  $("#fp-screen").textContent=(fp.screen||"—").replace("x"," × ");
+  $("#fp-hw").textContent=(fp.hardware_concurrency||"?");
+  $("#fp-vid").textContent=seed;
 }
 function openEdit(id){
   const p=id ? state.profiles.find(x=>x.id===id) : null;
   state.editing = id || null;
-  state.seedHex = p ? p.seed_hex : null;   // existing: fixed; new: minted below
+  state.seedHex = p ? p.seed_hex : null;
   $("#m-eyebrow").textContent = p?"Edit profile":"New profile";
   $("#m-title").textContent   = p? p.name : "New profile";
   $("#f-name").value = p? p.name : "";
@@ -356,9 +404,8 @@ function openEdit(id){
   $("#f-country").value = (pr && (pr.country||pr.cc)) || "US";
   setProxyMode(pr?"sx":(p?"none":"sx"));
   $("#backdrop").classList.add("show");
-  if(!p){ // fresh profile: mint one fixed identity now, anchored to it
-    if(api()) api().new_seed().then(s=>{ state.seedHex=s.seed_hex; refreshFp(); });
-  } else refreshFp();
+  if(!p){ if(api()) api().new_seed().then(s=>{ state.seedHex=s.seed_hex; refreshFp(); }); }
+  else refreshFp();
   $("#f-name").focus();
 }
 function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=null; }
@@ -368,37 +415,13 @@ function collect(){
     : null;
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
-/* --- Proxies menu (global SX API key) --- */
-async function openProxies(){
-  const a=api(); if(!a) return;
-  let s={}; try{ s=await a.get_settings(); }catch(e){}
-  $("#px-key").value=(s.sx&&s.sx.api_key)||"";
-  $("#px-backdrop").classList.add("show"); $("#px-key").focus();
-}
-function closeProxies(){ $("#px-backdrop").classList.remove("show"); }
-async function saveProxies(){
-  const a=api(); if(!a) return;
-  const s=(await a.get_settings())||{};
-  s.sx=Object.assign({}, s.sx, {api_key:$("#px-key").value.trim()});
-  const res=await a.save_settings(s);
-  if(!res||!res.ok){ toast((res&&res.error)||"Save failed", true); return; }
-  toast("Saved"); closeProxies(); refreshKeyhint();
-}
-async function testKey(){
-  const a=api(); if(!a) return;
-  const key=$("#px-key").value.trim(); if(!key){ toast("Enter a key first", true); return; }
-  toast("Testing…");
-  let r; try{ r=await a.sx_check_key(key); }catch(e){ r=null; }
-  if(r&&r.ok) toast("API key valid"); else toast("Key check failed: "+((r&&r.detail)||"unknown"), true);
-}
 async function save(thenLaunch){
   const a=api(); if(!a) return;
-  if(!state.seedHex){ const s=await a.new_seed(); state.seedHex=s.seed_hex; }  // guard the mint race
+  if(!state.seedHex){ const s=await a.new_seed(); state.seedHex=s.seed_hex; }
   const res=await a.save_profile(collect());
   if(!res || !res.ok){ toast((res&&res.error)||"Save failed", true); return; }
   await reload();
-  const id=res.profile.id;
-  closeModal();
+  const id=res.profile.id; closeModal();
   if(thenLaunch) launch(id); else toast("Saved");
 }
 async function launch(id){
@@ -415,6 +438,30 @@ async function del(){
   const p=state.profiles.find(x=>x.id===state.selected);
   if(p && p.running){ toast("Stop the profile before deleting", true); return; }
   await a.delete_profile(state.selected); state.selected=null; await reload(); toast("Deleted");
+}
+
+/* --- proxies menu --- */
+async function openProxies(){
+  const a=api(); if(!a) return;
+  let s={}; try{ s=await a.get_settings(); }catch(e){}
+  $("#px-key").value=(s.sx&&s.sx.api_key)||"";
+  $("#px-backdrop").classList.add("show"); $("#px-key").focus();
+}
+function closeProxies(){ $("#px-backdrop").classList.remove("show"); }
+async function saveProxies(){
+  const a=api(); if(!a) return;
+  const s=(await a.get_settings())||{};
+  s.sx=Object.assign({}, s.sx, {api_key:$("#px-key").value.trim()});
+  const res=await a.save_settings(s);
+  if(!res||!res.ok){ toast((res&&res.error)||"Save failed", true); return; }
+  toast("Saved"); closeProxies(); refreshKeyhint(); refreshSxStatus();
+}
+async function testKey(){
+  const a=api(); if(!a) return;
+  const key=$("#px-key").value.trim(); if(!key){ toast("Enter a key first", true); return; }
+  toast("Testing…");
+  let r; try{ r=await a.sx_check_key(key); }catch(e){ r=null; }
+  if(r&&r.ok) toast("API key valid"); else toast("Key check failed: "+((r&&r.detail)||"unknown"), true);
 }
 
 /* --- wire --- */
