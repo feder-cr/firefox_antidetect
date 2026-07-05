@@ -160,17 +160,11 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .keyhint.warn{border-color:var(--accent-line);color:var(--accent);background:var(--accent-soft)}
 .keyhint.warn a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
 
-/* fingerprint "face" card — the identity a seed renders */
-.face{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel-2)}
-.face-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--line)}
-.face-head .l{font:600 10px/1 var(--ui);letter-spacing:.11em;text-transform:uppercase;color:var(--faint)}
-.face-head .id{font:600 11.5px/1 var(--mono);color:var(--accent)}
-.face-tiles{display:grid;grid-template-columns:1fr 1fr}
-.tile{padding:12px 14px;border-right:1px solid var(--line-2);min-width:0}
-.tile:last-child{border-right:0}
-.tile.gpu{grid-column:1 / -1;border-right:0;border-bottom:1px solid var(--line-2)}
-.tile .tk{display:block;font:600 9.5px/1 var(--ui);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
-.tile .tv{display:block;font:500 13px/1.3 var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* fingerprint strip — the identity a seed renders (compact, read-only) */
+.fpstrip{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
+.fpstrip .chip{width:26px;height:26px;border-radius:7px;flex:none;background:linear-gradient(135deg,var(--accent),#B8722A);box-shadow:0 0 0 1px var(--accent-line) inset}
+.fpstrip .txt{flex:1;min-width:0;font:500 12.5px/1.3 var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fpstrip .id{font:600 11px/1 var(--mono);color:var(--accent);flex:none}
 
 .modal-foot{display:flex;align-items:center;gap:8px;padding:15px 20px;border-top:1px solid var(--line);background:var(--panel-2)}
 .modal-foot .grow{flex:1}
@@ -239,13 +233,10 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
       </div>
       <div class="modal-body">
         <div class="field"><label>Name</label><input id="f-name" placeholder="Retail US - A"></div>
-        <div class="face">
-          <div class="face-head"><span class="l">Fingerprint</span><span class="id" id="fp-vid">—</span></div>
-          <div class="face-tiles">
-            <div class="tile gpu"><span class="tk">GPU</span><span class="tv" id="fp-gpu" title="">—</span></div>
-            <div class="tile"><span class="tk">Display</span><span class="tv" id="fp-screen">—</span></div>
-            <div class="tile"><span class="tk">Cores</span><span class="tv" id="fp-hw">—</span></div>
-          </div>
+        <div class="fpstrip">
+          <span class="chip"></span>
+          <span class="txt" id="fp-txt" title="">—</span>
+          <span class="id" id="fp-vid">—</span>
         </div>
 
         <div class="section-lab">Connection</div>
@@ -383,12 +374,13 @@ async function refreshKeyhint(){
 }
 async function refreshFp(){
   const a=api(); if(!a) return;
-  const seed=state.seedHex; if(!seed){ $("#fp-vid").textContent="—"; return; }
+  const t=$("#fp-txt");
+  const seed=state.seedHex; if(!seed){ t.textContent="—"; $("#fp-vid").textContent="—"; return; }
   let fp; try{ fp=await a.fingerprint_preview(seed); }catch(e){ return; }
-  if(!fp || fp.error){ $("#fp-gpu").textContent=$("#fp-screen").textContent=$("#fp-hw").textContent="—"; $("#fp-vid").textContent="—"; return; }
-  const g=$("#fp-gpu"); g.textContent=fp.gpu||fp.gpu_renderer||"—"; g.title=fp.gpu_renderer||"";
-  $("#fp-screen").textContent=(fp.screen||"—").replace("x"," × ");
-  $("#fp-hw").textContent=(fp.hardware_concurrency||"?");
+  if(!fp || fp.error){ t.textContent="—"; $("#fp-vid").textContent="—"; return; }
+  const gpu=fp.gpu||fp.gpu_renderer||"—";
+  t.textContent=gpu+" · "+(fp.screen||"—").replace("x"," × ")+" · "+(fp.hardware_concurrency||"?")+" cores";
+  t.title=fp.gpu_renderer||"";
   $("#fp-vid").textContent=seed;
 }
 function openEdit(id){
