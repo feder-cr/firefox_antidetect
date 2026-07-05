@@ -65,7 +65,7 @@ def test_save_sx_profile_stores_intent(tmp_path):
     api = Api(ProfileStore(tmp_path / "p.db"), base=tmp_path)
     res = api.save_profile({"name": "SX", "seed": "0x1",
                             "proxy": {"provider": "sx", "product": "mobile",
-                                      "country": "DE", "session": "rotating", "traffic_gb": 2.5}})
+                                      "country": "DE", "session": "sticky"}})
     assert res["ok"] is True
     row = api.list_profiles()[0]
-    assert row["proxy"]["product"] == "mobile" and row["proxy"]["traffic_gb"] == 2.5
+    assert row["proxy"]["product"] == "mobile" and row["proxy"]["country"] == "DE"

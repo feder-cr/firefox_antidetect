@@ -210,16 +210,8 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
             <button data-v="residential" class="on" type="button">Residential</button><button data-v="mobile" type="button">Mobile</button><button data-v="corporate" type="button">Corporate</button>
           </div>
         </div>
-        <div class="field sxonly"><label>Country</label>
+        <div class="field wide sxonly"><label>Country</label>
           <select id="f-country"><option value="US">United States</option><option value="DE">Germany</option><option value="GB">United Kingdom</option><option value="NL">Netherlands</option><option value="FR">France</option></select>
-        </div>
-        <div class="field sxonly"><label>Session</label>
-          <div class="seg" id="f-session" role="group" aria-label="Session">
-            <button data-v="sticky" class="on" type="button">Sticky</button><button data-v="rotating" type="button">Rotating</button>
-          </div>
-        </div>
-        <div class="field wide sxonly"><label>Traffic cap (GB) — optional</label>
-          <input class="mono" id="f-traffic" type="number" min="0" step="0.5" placeholder="no cap">
         </div>
 
         <div class="card">
@@ -268,7 +260,7 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C9852F","#4F7CC9","#3F9D6B","#8A6FC0","#B36A4A","#6B7480","#B8506A","#3E8E8E"];
-let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", product: "residential", session: "sticky" };
+let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", product: "residential" };
 
 /* --- pywebview bridge (api ready after `pywebviewready`) --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -330,7 +322,6 @@ async function reload(){
 /* --- modal --- */
 function segOn(sel,v){ $(sel).querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); }
 function setProduct(p){ state.product=p; segOn("#f-product",p); }
-function setSession(s){ state.session=s; segOn("#f-session",s); }
 function setProxyMode(m){
   state.proxymode=m;
   $("#f-proxymode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
@@ -362,9 +353,7 @@ function openEdit(id){
   $("#f-name").value = p? p.name : "";
   const pr = p && p.proxy;
   setProduct((pr && pr.product) || "residential");
-  setSession((pr && pr.session) || "sticky");
   $("#f-country").value = (pr && (pr.country||pr.cc)) || "US";
-  $("#f-traffic").value = (pr && pr.traffic_gb) || "";
   setProxyMode(pr?"sx":(p?"none":"sx"));
   $("#backdrop").classList.add("show");
   if(!p){ // fresh profile: mint one fixed identity now, anchored to it
@@ -374,10 +363,8 @@ function openEdit(id){
 }
 function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=null; }
 function collect(){
-  const t = parseFloat($("#f-traffic").value);
   const proxy = state.proxymode==="sx"
-    ? { provider:"sx", product:state.product, country:$("#f-country").value,
-        session:state.session, traffic_gb:(isFinite(t) && t>0 ? t : null) }
+    ? { provider:"sx", product:state.product, country:$("#f-country").value, session:"sticky" }
     : null;
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
@@ -445,7 +432,6 @@ $("#m-save").addEventListener("click",()=>save(false));
 $("#m-savelaunch").addEventListener("click",()=>save(true));
 $("#f-proxymode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProxyMode(b.dataset.v); });
 $("#f-product").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProduct(b.dataset.v); });
-$("#f-session").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setSession(b.dataset.v); });
 $("#f-setupkey").addEventListener("click",openProxies);
 $("#backdrop").addEventListener("click",e=>{ if(e.target===$("#backdrop")) closeModal(); });
 $("#px-open").addEventListener("click",openProxies);
