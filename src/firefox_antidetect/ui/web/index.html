@@ -304,7 +304,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C4842E","#4F7CC9","#2FA37A","#8A6FC0","#B36A4A","#5E6B78","#B8506A","#3E8E8E"];
-let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx" };
+let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", sxConfigured: false };
 
 /* --- pywebview bridge --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -387,13 +387,20 @@ function setProxyMode(m){
   state.proxymode=m;
   $("#f-proxymode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
   document.querySelectorAll(".sxonly").forEach(e=>e.classList.toggle("hidden", m!=="sx"));
-  refreshKeyhint();
+  updateValidity();   // instant (uses cached sxConfigured)
+  refreshKeyhint();   // re-checks the key, then updates again
 }
 async function refreshKeyhint(){
   const a=api(); const kh=$("#f-keyhint");
-  if(!a || state.proxymode!=="sx"){ kh.classList.add("hidden"); return; }
-  let c={configured:false}; try{ c=await a.sx_configured(); }catch(e){}
-  kh.classList.toggle("hidden", !!c.configured);
+  if(a){ let c={configured:false}; try{ c=await a.sx_configured(); }catch(e){} state.sxConfigured=!!c.configured; }
+  kh.classList.toggle("hidden", state.proxymode!=="sx" || state.sxConfigured);
+  updateValidity();
+}
+/* A profile with SX selected but no API key can't launch — block Save/Launch. */
+function updateValidity(){
+  const incomplete = (state.proxymode==="sx" && !state.sxConfigured);
+  $("#m-save").disabled = incomplete;
+  $("#m-savelaunch").disabled = incomplete;
 }
 async function refreshFp(){
   const a=api(); if(!a) return;
