@@ -274,10 +274,11 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
         <div class="keyhint warn sxonly hidden" id="f-keyhint">No SX.ORG API key set<span class="grow"></span><a id="f-setupkey">Set it up</a></div>
         <div class="field-row sxonly">
           <div class="field"><label>Country</label>
-            <select id="f-country"><option value="US">United States</option><option value="DE">Germany</option><option value="GB">United Kingdom</option><option value="NL">Netherlands</option><option value="FR">France</option></select>
+            <select id="f-country"><option value="US" data-id="">United States</option></select>
           </div>
           <div class="field"><label>City</label>
-            <input id="f-city" placeholder="Any" autocomplete="off">
+            <input id="f-city" list="f-city-list" placeholder="Any" autocomplete="off">
+            <datalist id="f-city-list"></datalist>
           </div>
         </div>
       </div>
@@ -327,6 +328,9 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 const $ = s => document.querySelector(s);
 const AVATAR = ["#C4842E","#4F7CC9","#2FA37A","#8A6FC0","#B36A4A","#5E6B78","#B8506A","#3E8E8E"];
 let state = { profiles: [], selected: null, editing: null, seedHex: null, proxymode: "sx", sxConfigured: false };
+let _countries = null;                       // cached SX directory countries [{id,name,code}]
+let _cityByName = {};                          // current country cities: nameLower -> numeric id
+let _sxWant = { country: "US", city: "" };     // desired selection when (re)loading the dropdowns
 
 /* --- pywebview bridge --- */
 function api(){ return (window.pywebview && window.pywebview.api) || null; }
@@ -409,8 +413,31 @@ function setProxyMode(m){
   state.proxymode=m;
   $("#f-proxymode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===m));
   document.querySelectorAll(".sxonly").forEach(e=>e.classList.toggle("hidden", m!=="sx"));
+  if(m==="sx") loadCountries();   // populate Country/City from the SX directory
   updateValidity();   // instant (uses cached sxConfigured)
   refreshKeyhint();   // re-checks the key, then updates again
+}
+function currentCountryId(){ const o=$("#f-country").selectedOptions[0]; return o ? (o.dataset.id||"") : ""; }
+async function loadCountries(){
+  const a=api(); if(!a) return;
+  if(_countries===null){
+    let r; try{ r=await a.sx_countries(); }catch(e){ r=null; }
+    if(r && r.ok && Array.isArray(r.countries) && r.countries.length) _countries=r.countries;  // cache success only
+  }
+  const sel=$("#f-country");
+  if(_countries) sel.innerHTML=_countries.map(c=>'<option value="'+esc(c.code)+'" data-id="'+esc(c.id)+'">'+esc(c.name)+'</option>').join("");
+  if(Array.from(sel.options).some(o=>o.value===_sxWant.country)) sel.value=_sxWant.country;
+  else if(sel.options.length) sel.selectedIndex=0;
+  await loadCities(currentCountryId(), _sxWant.city);
+}
+async function loadCities(countryId, selectName){
+  _cityByName={}; const dl=$("#f-city-list"); dl.innerHTML="";
+  $("#f-city").value=selectName||"";
+  const a=api(); if(!a || !countryId) return;
+  let r; try{ r=await a.sx_cities(countryId); }catch(e){ r=null; }
+  const cities=(r && r.ok && Array.isArray(r.cities)) ? r.cities : [];
+  dl.innerHTML=cities.map(c=>'<option value="'+esc(c.name)+'"></option>').join("");
+  for(const c of cities) _cityByName[String(c.name).toLowerCase()]=c.id;
 }
 async function refreshKeyhint(){
   const a=api(); const kh=$("#f-keyhint");
@@ -442,9 +469,8 @@ function openEdit(id){
   $("#m-title").textContent = p ? "Edit profile" : "New profile";
   $("#f-name").value = p? p.name : "";
   const pr = p && p.proxy;
-  $("#f-country").value = (pr && (pr.country||pr.cc)) || "US";
-  $("#f-city").value = (pr && pr.city) || "";
-  setProxyMode(pr?"sx":(p?"none":"sx"));
+  _sxWant = { country: (pr && (pr.country||pr.cc)) || "US", city: (pr && pr.city_name) || "" };
+  setProxyMode(pr?"sx":(p?"none":"sx"));   // loadCountries() reads _sxWant
   $("#backdrop").classList.add("show");
   if(!p){ if(api()) api().new_seed().then(s=>{ state.seedHex=s.seed_hex; refreshFp(); }); }
   else refreshFp();
@@ -454,8 +480,12 @@ function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=nu
 function collect(){
   let proxy=null;
   if(state.proxymode==="sx"){
-    proxy={ provider:"sx", country:$("#f-country").value, session:"sticky" };
-    const city=$("#f-city").value.trim(); if(city) proxy.city=city;
+    const opt=$("#f-country").selectedOptions[0];
+    const cname=$("#f-city").value.trim();
+    const cid=_cityByName[cname.toLowerCase()] || null;   // resolve the typed city to its SX id
+    proxy={ provider:"sx", country:$("#f-country").value,
+            country_id:(opt && opt.dataset.id) || null,
+            city_id:cid, city_name:(cid?cname:null), session:"sticky" };
   }
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
@@ -547,6 +577,7 @@ $("#m-cancel").addEventListener("click",closeModal);
 $("#m-save").addEventListener("click",()=>save(false));
 $("#m-savelaunch").addEventListener("click",()=>save(true));
 $("#f-proxymode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setProxyMode(b.dataset.v); });
+$("#f-country").addEventListener("change",()=>loadCities(currentCountryId(),""));
 $("#f-setupkey").addEventListener("click",openProxies);
 $("#backdrop").addEventListener("click",e=>{ if(e.target===$("#backdrop")) closeModal(); });
 $("#px-open").addEventListener("click",openProxies);

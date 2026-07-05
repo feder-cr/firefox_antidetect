@@ -42,7 +42,8 @@ def api_key_of(settings: Dict[str, Any]) -> str:
 
 
 def build_username(sx: Dict[str, Any]) -> str:
-    """Encode targeting into a connection username (dash-delimited tokens).
+    """Encode targeting into a connection username (dash-delimited tokens),
+    e.g. ``country-US-city-4744870-hold-session``.
 
     No product is forced: a product prefix is added ONLY when the caller set one
     explicitly - otherwise the SX account/key decides which pool is used."""
@@ -51,9 +52,24 @@ def build_username(sx: Dict[str, Any]) -> str:
     if product in _PREFIX:
         parts.append(_PREFIX[product])
     parts += ["country", (sx.get("country") or "US").upper()]
+    city_id = sx.get("city_id")
+    if city_id:
+        parts += ["city", str(city_id)]   # SX numeric city id (from the directory)
     if (sx.get("session") or "sticky").lower() == "sticky":
         parts.append("hold-session")  # sticky; absent => rotating
     return "-".join(parts)
+
+
+def list_countries(api_key: str) -> list:
+    """SX directory: [{"id": int, "name": str, "code": <ISO-2>}, ...]."""
+    res = _get("/v2/dir/countries", api_key, {})
+    return res.get("countries", []) if isinstance(res, dict) else []
+
+
+def list_cities(api_key: str, country_id: Any) -> list:
+    """SX directory cities for a numeric country id: [{"id": int, "name": str}, ...]."""
+    res = _get("/v2/dir/cities", api_key, {"countryId": country_id})
+    return res.get("cities", []) if isinstance(res, dict) else []
 
 
 def _get(path: str, api_key: str, params: Dict[str, Any], timeout: float = 15.0) -> Any:
@@ -97,9 +113,6 @@ def resolve_proxy(sx: Dict[str, Any], settings: Dict[str, Any]) -> Dict[str, str
     product = (sx.get("product") or "").strip().lower()
     if product:
         params["types"] = product   # otherwise SX uses the account's own product
-    city = str(sx.get("city") or "").strip()
-    if city:
-        params["city"] = city       # NOTE: SX may need a numeric city id (Dir API) - verify with a live key
     res = _get("/v2/proxy/search", api_key, params)
     endpoint = _first_endpoint(res)
     if not endpoint:

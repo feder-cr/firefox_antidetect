@@ -23,6 +23,19 @@ def test_build_username_sticky_rotating_and_country_case():
     assert sx.build_username({"country": "de"}) == "country-DE-hold-session"
 
 
+def test_build_username_with_city_id():
+    assert sx.build_username({"country": "US", "city_id": 4744870, "session": "sticky"}) \
+        == "country-US-city-4744870-hold-session"
+    # no city_id -> no city token
+    assert sx.build_username({"country": "US", "city_id": None}) == "country-US-hold-session"
+
+
+def test_sx_directory_guards_without_key(tmp_path):
+    api = Api(ProfileStore(tmp_path / "p.db"), base=tmp_path)
+    assert api.sx_countries()["ok"] is False
+    assert api.sx_cities(1)["ok"] is False
+
+
 def test_api_key_of():
     assert sx.api_key_of({"sx": {"api_key": "  K  "}}) == "K"
     assert sx.api_key_of({}) == ""

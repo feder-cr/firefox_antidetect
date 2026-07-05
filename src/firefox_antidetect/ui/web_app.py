@@ -216,6 +216,26 @@ class Api:
         """Validate a key against the SX API (used by the Proxies menu 'Test')."""
         return _sx.check_api_key(api_key)
 
+    def sx_countries(self) -> Dict[str, Any]:
+        """SX directory country list for the editor's Country dropdown."""
+        key = _sx.api_key_of(_settings.load_settings(self.base))
+        if not key:
+            return {"ok": False, "error": "no api key"}
+        try:
+            return {"ok": True, "countries": _sx.list_countries(key)}
+        except _sx.SxError as e:
+            return {"ok": False, "error": str(e)}
+
+    def sx_cities(self, country_id: Any) -> Dict[str, Any]:
+        """SX directory cities for a numeric country id (cascaded from Country)."""
+        key = _sx.api_key_of(_settings.load_settings(self.base))
+        if not key:
+            return {"ok": False, "error": "no api key"}
+        try:
+            return {"ok": True, "cities": _sx.list_cities(key, country_id)}
+        except _sx.SxError as e:
+            return {"ok": False, "error": str(e)}
+
 
 def _index_html() -> str:
     return (Path(__file__).parent / "web" / "index.html").read_text(encoding="utf-8")
