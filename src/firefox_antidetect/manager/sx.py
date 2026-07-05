@@ -42,11 +42,15 @@ def api_key_of(settings: Dict[str, Any]) -> str:
 
 
 def build_username(sx: Dict[str, Any]) -> str:
-    """Encode targeting into a connection username (dash-delimited tokens)."""
-    product = (sx.get("product") or "residential").lower()
-    prefix = _PREFIX.get(product, "res")
-    cc = (sx.get("country") or "US").upper()
-    parts = [prefix, "country", cc]
+    """Encode targeting into a connection username (dash-delimited tokens).
+
+    No product is forced: a product prefix is added ONLY when the caller set one
+    explicitly — otherwise the SX account/key decides which pool is used."""
+    parts = []
+    product = (sx.get("product") or "").strip().lower()
+    if product in _PREFIX:
+        parts.append(_PREFIX[product])
+    parts += ["country", (sx.get("country") or "US").upper()]
     if (sx.get("session") or "sticky").lower() == "sticky":
         parts.append("hold-session")  # sticky; absent => rotating
     return "-".join(parts)
@@ -89,12 +93,14 @@ def resolve_proxy(sx: Dict[str, Any], settings: Dict[str, Any]) -> Dict[str, str
     if not api_key:
         raise SxError("Set your SX.org API key in the Proxies menu first.")
     cc = (sx.get("country") or "US").upper()
-    product = (sx.get("product") or "residential").lower()
-    res = _get("/v2/proxy/search", api_key,
-               {"country": cc, "types": product, "limit": 1})
+    params = {"country": cc, "limit": 1}
+    product = (sx.get("product") or "").strip().lower()
+    if product:
+        params["types"] = product   # otherwise SX uses the account's own product
+    res = _get("/v2/proxy/search", api_key, params)
     endpoint = _first_endpoint(res)
     if not endpoint:
-        raise SxError(f"SX returned no {product} proxy for {cc}.")
+        raise SxError(f"SX returned no proxy for {cc}.")
     return {
         "server": f"socks5://{endpoint}",
         "username": build_username(sx),

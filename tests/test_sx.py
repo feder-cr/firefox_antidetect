@@ -12,14 +12,15 @@ from firefox_antidetect.ui.web_app import Api
 
 
 def test_build_username_sticky_rotating_and_country_case():
+    # product prefix ONLY when explicitly set — no default is injected
     assert sx.build_username({"product": "residential", "country": "us", "session": "sticky"}) \
         == "res-country-US-hold-session"
     assert sx.build_username({"product": "residential", "country": "US", "session": "rotating"}) \
         == "res-country-US"
-    # default product=residential, default session=sticky
-    assert sx.build_username({"country": "de"}) == "res-country-DE-hold-session"
     assert sx.build_username({"product": "mobile", "country": "fr", "session": "sticky"}) \
         == "mobile-country-FR-hold-session"
+    # no product -> no prefix (the SX account decides the pool), default session=sticky
+    assert sx.build_username({"country": "de"}) == "country-DE-hold-session"
 
 
 def test_api_key_of():

@@ -402,7 +402,7 @@ function openEdit(id){
 function closeModal(){ $("#backdrop").classList.remove("show"); state.editing=null; }
 function collect(){
   const proxy = state.proxymode==="sx"
-    ? { provider:"sx", product:"residential", country:$("#f-country").value, session:"sticky" }
+    ? { provider:"sx", country:$("#f-country").value, session:"sticky" }
     : null;
   return { id:state.editing, name:$("#f-name").value, seed:state.seedHex, proxy };
 }
