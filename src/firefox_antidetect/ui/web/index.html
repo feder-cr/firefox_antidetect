@@ -108,14 +108,19 @@ tbody tr.sel td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
 .sxchip{display:inline-block;font:700 9.5px/1 var(--ui);letter-spacing:.03em;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:4px;padding:3px 5px;margin-right:6px;vertical-align:1px}
 .direct{display:inline-block;font:600 11px/1 var(--ui);color:var(--idle);background:var(--idle-soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
 th.ta,.acts-cell{text-align:right;white-space:nowrap}
-.acts{display:inline-flex;gap:3px;justify-content:flex-end;opacity:.5;transition:opacity .12s}
-tr:hover .acts,tr.sel .acts{opacity:1}
-.rowbtn{appearance:none;display:grid;place-items:center;width:28px;height:28px;border-radius:7px;border:1px solid transparent;background:none;color:var(--muted);cursor:pointer}
+.acts{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
+.rowbtn{appearance:none;display:grid;place-items:center;width:28px;height:28px;border-radius:7px;border:1px solid transparent;background:none;color:var(--faint);cursor:pointer;transition:opacity .12s,color .12s,border-color .12s,background .12s}
 .rowbtn svg{width:15px;height:15px}
 .rowbtn:hover{background:var(--panel-2);border-color:var(--line);color:var(--text)}
-.rowbtn.go:hover{color:var(--live);border-color:var(--live)}
-.rowbtn.stop:hover{color:var(--accent);border-color:var(--accent-line)}
 .rowbtn.danger:hover{color:var(--err);border-color:var(--err)}
+.rowbtn.ico2{opacity:0}
+tr:hover .rowbtn.ico2,tr.sel .rowbtn.ico2{opacity:1}
+/* Launch = primary row action: prominent, always visible */
+.launch-btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:84px;font:600 11.5px/1 var(--ui);padding:7px 12px;border-radius:8px;border:1px solid var(--live);color:var(--live);background:transparent;cursor:pointer;transition:background .12s,color .12s,border-color .12s}
+.launch-btn svg{width:13px;height:13px}
+.launch-btn:hover{background:var(--live);color:#04140E}
+.launch-btn.stop{border-color:var(--line);color:var(--muted)}
+.launch-btn.stop:hover{background:var(--panel-2);color:var(--accent);border-color:var(--accent-line)}
 .empty{padding:70px 18px;text-align:center;color:var(--faint)}
 .empty .ico{width:44px;height:44px;margin:0 auto 14px;border-radius:12px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--line);color:var(--faint)}
 .empty b{display:block;color:var(--text);font-size:15px;font-weight:600;margin-bottom:4px}
@@ -323,7 +328,7 @@ function proxyCell(p){
 function fpCell(fp){
   if(!fp || fp.error) return '<span class="mono" style="color:var(--faint)">—</span>';
   const gpu=(fp.gpu||fp.gpu_renderer||"—");
-  return '<span class="mono">'+esc(gpu)+' · '+esc((fp.screen||"").replace("x"," × "))+'</span><div class="cell-sub mono">'+esc(fp.hardware_concurrency||"?")+' cores</div>';
+  return '<span class="mono" style="white-space:nowrap">'+esc(gpu)+' · '+esc((fp.screen||"").replace("x"," × "))+'</span><div class="cell-sub mono">'+esc(fp.hardware_concurrency||"?")+' cores</div>';
 }
 function render(){
   const q=$("#q").value.trim().toLowerCase();
@@ -356,12 +361,13 @@ const ICO={
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6"/></svg>',
 };
 function actsHtml(p){
-  const first = p.running
-    ? '<button class="rowbtn stop" data-act="stop" title="Stop">'+ICO.stop+'</button>'
-    : '<button class="rowbtn go" data-act="launch" title="Launch">'+ICO.play+'</button>';
-  return first
-    + '<button class="rowbtn" data-act="edit" title="Edit">'+ICO.edit+'</button>'
-    + '<button class="rowbtn danger" data-act="del" title="Delete">'+ICO.trash+'</button>';
+  const secondary =
+    '<button class="rowbtn ico2" data-act="edit" title="Edit">'+ICO.edit+'</button>'+
+    '<button class="rowbtn ico2 danger" data-act="del" title="Delete">'+ICO.trash+'</button>';
+  const primary = p.running
+    ? '<button class="launch-btn stop" data-act="stop">'+ICO.stop+'Stop</button>'
+    : '<button class="launch-btn" data-act="launch">'+ICO.play+'Launch</button>';
+  return secondary + primary;   // edit/delete (hover) then the prominent Launch/Stop
 }
 function select(id){ state.selected=(state.selected===id?null:id); render(); }
 
