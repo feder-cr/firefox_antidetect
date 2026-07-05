@@ -1,61 +1,56 @@
-# firefox_antidetect
+<p>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
+  <a href="https://github.com/feder-cr/firefox_antidetect/stargazers"><img src="https://img.shields.io/github/stars/feder-cr/firefox_antidetect" alt="GitHub stars"></a>
+</p>
 
-Antidetect browser **profile manager** (manual use) for the patched Firefox,
-built on [`invisible_core`](https://github.com/feder-cr/invisible_core). Manage
-many persistent browser identities - each with its own fixed fingerprint,
-proxy, and persisted cookies/logins - and launch a real Firefox window per
-profile. No Playwright.
+<h3 align="center">An antidetect profile manager for the patched Firefox. No code.</h3>
 
-## Install (dev)
+Run many browser identities from one desktop app. Each profile is a fixed fingerprint plus its own proxy and saved logins; hit Launch and a real Firefox window opens with that identity.
+
+<div align="center">
+<img src="docs/screenshot.png" alt="firefox_antidetect" width="820">
+</div>
+
+## Install
 
 ```bash
-pip install -e .            # pulls invisible-core (git) + platformdirs + pywebview
-```
-
-## Run
-
-```bash
+pip install git+https://github.com/feder-cr/firefox_antidetect.git
 python -m firefox_antidetect
 ```
 
-The UI is a native window rendering a web front-end (pywebview) - no browser
-tab, pure Python, and the HTML/CSS is easy to restyle.
+The patched Firefox binary is downloaded and cached on the first launch. Supported: **Windows**, **Linux**, **macOS**.
 
-- The window lists your profiles. **New profile** opens a centered editor
-  (name, seed with a re-roll dice, proxy = SX.ORG or none, locale/timezone),
-  with a live **fingerprint preview** (GPU/screen/cores/fonts) for the seed.
-  **Launch** opens a real Firefox window with that identity; **Edit** /
-  **Delete** manage them; the theme toggle switches light/dark.
-- On the first launch of a given `firefox-N`, the patched binary is downloaded
-  automatically (cached under your user data dir). It is not bundled.
-- Each profile's fingerprint is stable across launches (fixed seed), and its
-  cookies/storage/logins persist in its own profile directory.
-- `locale`/`timezone` default to `auto` - resolved from the proxy's egress
-  country so the browser's clock and language match the proxy.
+Built on [invisible_core](https://github.com/feder-cr/invisible_core); it launches the binary directly, no Playwright.
 
-## Where data lives
+## What you get
 
-`platformdirs.user_data_dir("firefox-antidetect")`:
-- `profiles.db` - profile metadata (SQLite)
-- `profiles/<id>/` - the persistent Firefox profile (cookies, storage, `user.js`)
+- **One identity per profile** - GPU, screen, fonts and ~400 other fields from a seed, stable across launches.
+- **Persistent** - each profile keeps its own cookies, storage and logins in its own directory.
+- **Per-profile proxy** - none, or [sx.org](https://sx.org/?c=invisible_playwright) residential, with country and city per profile.
+- **Live status** - see which profiles are running; close the browser and the list updates itself.
 
-## Tests
+## Proxies
 
-```bash
-pip install -e ".[dev]"
-python -m pytest -q                 # lib + web Api bridge (headless, no window)
-python -m pytest -m integration -q  # launches a real firefox-14 (needs the binary)
-```
+Around 90% of proxies are public, so their IPs are already known and blocked. For the clean 10%, residential IPs that aren't already known, we recommend [sx.org](https://sx.org/?c=invisible_playwright): set your API key once in the Proxies menu, then pick a country and city per profile. New accounts get 3 GB free with code `STEALTH`.
 
-## Packaging (standalone app)
+## Related projects
 
-```bash
-pip install pyinstaller
-pyinstaller packaging/firefox_antidetect.spec     # run once per OS
-```
+- **[invisible_core](https://github.com/feder-cr/invisible_core)** - the pure-config engine (seed to fingerprint to prefs, binary download, proxy, geo) this app runs on.
+- **[invisible_playwright](https://github.com/feder-cr/invisible_playwright)** - the same patched Firefox driven by Playwright, for automation.
+- **[firefox_antidetect_patch](https://github.com/feder-cr/firefox_antidetect_patch)** - the C++ patches against Firefox that produce the binary.
 
-Produces an onedir bundle under `dist/firefox_antidetect/` (Windows `.exe`,
-Linux dir/AppImage-ready, macOS `.app`). The Firefox binary is **not** bundled -
-`ensure_binary()` downloads it on first launch. Code-signing and auto-update are
-future work.
+## License
 
+MIT - see [LICENSE](LICENSE). The patched Firefox binary is distributed under the MPL-2.0 (Firefox upstream license).
+
+## Disclaimer
+
+This project is for educational purposes only. It is provided as-is, with no warranties. I take no responsibility for how it is used. Use it at your own risk and in compliance with the laws of your jurisdiction.
+
+---
+
+<p align="center">
+  Built by <a href="https://it.linkedin.com/in/federico-elia-5199951b6">Federico Elia</a>
+  &nbsp;<a href="https://it.linkedin.com/in/federico-elia-5199951b6"><img src="https://img.shields.io/badge/LinkedIn-Federico%20Elia-0A66C2?logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+</p>
