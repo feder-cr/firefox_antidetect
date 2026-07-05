@@ -1,4 +1,4 @@
-"""Web UI (pywebview) — the real app. Renders the shadcn interface in a native
+"""Web UI (pywebview) - the real app. Renders the shadcn interface in a native
 window and bridges it to the pure-Python manager lib via a JS<->Python API.
 
 `Api` is the whole surface JS can call (``window.pywebview.api.<method>``); it is
@@ -48,7 +48,7 @@ def _fp_view(seed: int, pin: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
 
 
 class Api:
-    """Everything the web UI can invoke. Pure Python, no webview import — so it
+    """Everything the web UI can invoke. Pure Python, no webview import - so it
     is testable headless. Each method returns JSON-serialisable data; mutating
     calls return ``{"ok": bool, ...}`` and never raise across the JS bridge."""
 
@@ -56,7 +56,7 @@ class Api:
         self.store = store
         self.base = base
         self._handles: Dict[str, Any] = {}  # profile_id -> LaunchHandle
-        # NOTE: never store the pywebview Window as a public attribute here — it
+        # NOTE: never store the pywebview Window as a public attribute here - it
         # is the js_api object and pywebview would try to serialize the attribute
         # into JS, recursing forever over the native .NET window. Reach the window
         # via webview.windows in _notify() instead.
@@ -193,7 +193,7 @@ class Api:
 
     def statuses(self) -> Dict[str, bool]:
         """Lightweight per-profile running map for the UI's live refresh (no
-        fingerprint recompute — cheap to poll)."""
+        fingerprint recompute - cheap to poll)."""
         return {p.id: self._running(p.id) for p in self.store.list()}
 
     # ----- Proxies menu (global SX settings) -----
@@ -208,7 +208,7 @@ class Api:
             return {"ok": False, "error": str(e)}
 
     def sx_configured(self) -> Dict[str, Any]:
-        """Whether an SX API key is set — drives the editor's 'set up key' banner
+        """Whether an SX API key is set - drives the editor's 'set up key' banner
         without exposing the key itself."""
         return {"configured": bool(_sx.api_key_of(_settings.load_settings(self.base)))}
 

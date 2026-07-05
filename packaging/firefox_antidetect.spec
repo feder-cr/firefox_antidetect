@@ -1,6 +1,6 @@
-# PyInstaller spec — firefox_antidetect (onedir, cross-platform).
+# PyInstaller spec - firefox_antidetect (onedir, cross-platform).
 # Build:  pyinstaller packaging/firefox_antidetect.spec
-# The patched Firefox binary is NOT bundled — ensure_binary() downloads it on
+# The patched Firefox binary is NOT bundled - ensure_binary() downloads it on
 # first launch. invisible_core's data files (fpforge JSONs, font-map) are
 # collected so profile generation works inside the frozen app.
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
@@ -31,7 +31,7 @@ exe = EXE(
     pyz, a.scripts, [],
     exclude_binaries=True,
     name="firefox_antidetect",
-    console=False,  # GUI app — no console window
+    console=False,  # GUI app - no console window
 )
 coll = COLLECT(
     exe, a.binaries, a.zipfiles, a.datas,

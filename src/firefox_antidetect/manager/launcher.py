@@ -54,7 +54,7 @@ class LaunchHandle:
 def _loc(locale: str, geo: "_SessionGeo", proxy: Optional[Dict[str, str]]) -> str:
     """Resolve a ``"auto"`` locale to a concrete BCP-47 tag from the egress
     (reusing the egress IP already discovered for the timezone); pass an
-    explicit tag through. ``translate_profile_to_prefs`` needs a real tag —
+    explicit tag through. ``translate_profile_to_prefs`` needs a real tag -
     it does NOT special-case ``"auto"``."""
     if (locale or "").strip().lower() == "auto":
         return resolve_session_locale(geo.egress_ip, proxy)

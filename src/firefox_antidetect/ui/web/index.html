@@ -174,7 +174,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .keyhint.warn{border-color:var(--accent-line);color:var(--accent);background:var(--accent-soft)}
 .keyhint.warn a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
 
-/* fingerprint strip — the identity a seed renders (compact, read-only) */
+/* fingerprint strip - the identity a seed renders (compact, read-only) */
 .fpstrip{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2)}
 .fpstrip .chip{width:26px;height:26px;border-radius:7px;flex:none;background:linear-gradient(135deg,var(--accent),#B8722A);box-shadow:0 0 0 1px var(--accent-line) inset}
 .fpstrip .txt{flex:1;min-width:0;font:500 12.5px/1.3 var(--mono);color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -245,8 +245,8 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
         <div class="field"><label>Name</label><input id="f-name" placeholder="Retail US - A"></div>
         <div class="fpstrip">
           <span class="chip"></span>
-          <span class="txt" id="fp-txt" title="">—</span>
-          <span class="id" id="fp-vid">—</span>
+          <span class="txt" id="fp-txt" title="">-</span>
+          <span class="id" id="fp-vid">-</span>
         </div>
 
         <div class="section-lab">Connection</div>
@@ -286,7 +286,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
       </div>
       <div class="modal-body">
         <div class="field"><label>API key</label><input class="mono" id="px-key" placeholder="paste your my.sx.org API key" autocomplete="off" spellcheck="false"></div>
-        <div class="keyhint">The API key is the only thing you set here — country and product are per profile.<span class="grow"></span><a href="https://my.sx.org/api-help" target="_blank" rel="noopener">Where?</a></div>
+        <div class="keyhint">The API key is the only thing you set here. Country and product are per profile.<span class="grow"></span><a href="https://my.sx.org/api-help" target="_blank" rel="noopener">Where?</a></div>
       </div>
       <div class="modal-foot">
         <button class="btn ghost" id="px-cancel" type="button">Close</button>
@@ -313,7 +313,7 @@ function whenReady(fn){ if(api()) return fn(); window.addEventListener('pywebvie
 function initials(n){ const p=(n||"?").trim().split(/\s+/); return ((p[0]||"?")[0]+(p.length>1?p[p.length-1][0]:"")).toUpperCase(); }
 function color(id){ let h=0; for(const c of (id||"")) h=(h*31+c.charCodeAt(0))>>>0; return AVATAR[h%AVATAR.length]; }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function ago(iso){ if(!iso) return "never"; const d=new Date(iso); if(isNaN(d)) return "—";
+function ago(iso){ if(!iso) return "never"; const d=new Date(iso); if(isNaN(d)) return "-";
   const s=(Date.now()-d.getTime())/1000; if(s<60)return"just now"; if(s<3600)return Math.floor(s/60)+" min ago";
   if(s<86400)return Math.floor(s/3600)+" h ago"; if(s<172800)return"yesterday"; return Math.floor(s/86400)+" days ago"; }
 function toast(msg, err){ const t=$("#toast"); t.textContent=msg; t.className="toast show"+(err?" err":""); clearTimeout(toast._t); toast._t=setTimeout(()=>t.className="toast",3200); }
@@ -325,8 +325,8 @@ function proxyCell(p){
   return '<span class="sxchip">SX.ORG</span>'+(cc?'<span class="cc">'+esc(cc)+'</span>':'');
 }
 function fpCell(fp){
-  if(!fp || fp.error) return '<span class="mono" style="color:var(--faint)">—</span>';
-  const gpu=(fp.gpu||fp.gpu_renderer||"—");
+  if(!fp || fp.error) return '<span class="mono" style="color:var(--faint)">-</span>';
+  const gpu=(fp.gpu||fp.gpu_renderer||"-");
   return '<span class="mono" style="white-space:nowrap">'+esc(gpu)+' · '+esc((fp.screen||"").replace("x"," × "))+'</span><div class="cell-sub mono">'+esc(fp.hardware_concurrency||"?")+' cores</div>';
 }
 function render(){
@@ -395,7 +395,7 @@ async function refreshKeyhint(){
   kh.classList.toggle("hidden", state.proxymode!=="sx" || state.sxConfigured);
   updateValidity();
 }
-/* A profile with SX selected but no API key can't launch — block Save/Launch. */
+/* A profile with SX selected but no API key can't launch - block Save/Launch. */
 function updateValidity(){
   const incomplete = (state.proxymode==="sx" && !state.sxConfigured);
   $("#m-save").disabled = incomplete;
@@ -404,11 +404,11 @@ function updateValidity(){
 async function refreshFp(){
   const a=api(); if(!a) return;
   const t=$("#fp-txt");
-  const seed=state.seedHex; if(!seed){ t.textContent="—"; $("#fp-vid").textContent="—"; return; }
+  const seed=state.seedHex; if(!seed){ t.textContent="-"; $("#fp-vid").textContent="-"; return; }
   let fp; try{ fp=await a.fingerprint_preview(seed); }catch(e){ return; }
-  if(!fp || fp.error){ t.textContent="—"; $("#fp-vid").textContent="—"; return; }
-  const gpu=fp.gpu||fp.gpu_renderer||"—";
-  t.textContent=gpu+" · "+(fp.screen||"—").replace("x"," × ")+" · "+(fp.hardware_concurrency||"?")+" cores";
+  if(!fp || fp.error){ t.textContent="-"; $("#fp-vid").textContent="-"; return; }
+  const gpu=fp.gpu||fp.gpu_renderer||"-";
+  t.textContent=gpu+" · "+(fp.screen||"-").replace("x"," × ")+" · "+(fp.hardware_concurrency||"?")+" cores";
   t.title=fp.gpu_renderer||"";
   $("#fp-vid").textContent=seed;
 }

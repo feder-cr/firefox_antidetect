@@ -1,6 +1,6 @@
 """SX.org integration: username grammar, settings, and proxy resolution guards.
 Network paths (check_api_key with a real key, resolve_proxy with a key) are NOT
-exercised here — only the offline logic and the not-configured guards."""
+exercised here - only the offline logic and the not-configured guards."""
 from __future__ import annotations
 
 import pytest
@@ -12,7 +12,7 @@ from firefox_antidetect.ui.web_app import Api
 
 
 def test_build_username_sticky_rotating_and_country_case():
-    # product prefix ONLY when explicitly set — no default is injected
+    # product prefix ONLY when explicitly set - no default is injected
     assert sx.build_username({"product": "residential", "country": "us", "session": "sticky"}) \
         == "res-country-US-hold-session"
     assert sx.build_username({"product": "residential", "country": "US", "session": "rotating"}) \

@@ -1,4 +1,4 @@
-"""PyInstaller entry point — bootstraps the Qt app."""
+"""PyInstaller entry point - bootstraps the Qt app."""
 from firefox_antidetect.ui.app import run
 
 if __name__ == "__main__":

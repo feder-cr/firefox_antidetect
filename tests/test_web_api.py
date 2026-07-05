@@ -1,4 +1,4 @@
-"""The web UI's whole surface is the `Api` bridge — test it headless (no window)."""
+"""The web UI's whole surface is the `Api` bridge - test it headless (no window)."""
 from __future__ import annotations
 
 import pytest

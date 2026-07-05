@@ -16,7 +16,7 @@ def test_clean_gpu_strips_the_angle_blob():
     assert _clean_gpu("ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x46A6) Direct3D11 vs_5_0 ps_5_0, D3D11)",
                       "Intel") == "Intel(R) Iris(R) Xe Graphics"
     assert _clean_gpu("NVIDIA GeForce RTX 3060/PCIe/SSE2", "NVIDIA") == "NVIDIA GeForce RTX 3060/PCIe/SSE2"
-    assert _clean_gpu("", "") == "—"
+    assert _clean_gpu("", "") == "-"
 
 
 def test_pin_forces_a_field():

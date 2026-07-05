@@ -22,7 +22,7 @@ def _clean_gpu(renderer: str, vendor: str) -> str:
         r = re.sub(r"\s*\(0x[0-9a-fA-F]+\).*$", "", r)   # drop "(0x2D58) Direct3D11 ..."
         r = re.sub(r"\s+Direct3D.*$", "", r)
         r = re.sub(r"\s+vs_\d.*$", "", r).strip()
-    return r or "—"
+    return r or "-"
 
 
 def fingerprint_summary(seed: int, pin: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

@@ -1,4 +1,4 @@
-"""Global app settings (NOT per-profile) — currently the SX.org gateway
+"""Global app settings (NOT per-profile) - currently the SX.org gateway
 credentials. Stored as JSON next to profiles.db in the app-data dir.
 
 Shape:

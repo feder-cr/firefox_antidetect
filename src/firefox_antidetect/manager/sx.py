@@ -14,7 +14,7 @@ dict for ``invisible_core.configure_proxy``:
 
 NOTE (to verify against a live key): the exact ``/v2/proxy/search`` response
 shape and whether the returned endpoint needs user/pass vs IP-whitelist are
-confirmed only from the public docs schema — finalize once a real key is set.
+confirmed only from the public docs schema - finalize once a real key is set.
 """
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def build_username(sx: Dict[str, Any]) -> str:
     """Encode targeting into a connection username (dash-delimited tokens).
 
     No product is forced: a product prefix is added ONLY when the caller set one
-    explicitly — otherwise the SX account/key decides which pool is used."""
+    explicitly - otherwise the SX account/key decides which pool is used."""
     parts = []
     product = (sx.get("product") or "").strip().lower()
     if product in _PREFIX:
@@ -99,7 +99,7 @@ def resolve_proxy(sx: Dict[str, Any], settings: Dict[str, Any]) -> Dict[str, str
         params["types"] = product   # otherwise SX uses the account's own product
     city = str(sx.get("city") or "").strip()
     if city:
-        params["city"] = city       # NOTE: SX may need a numeric city id (Dir API) — verify with a live key
+        params["city"] = city       # NOTE: SX may need a numeric city id (Dir API) - verify with a live key
     res = _get("/v2/proxy/search", api_key, params)
     endpoint = _first_endpoint(res)
     if not endpoint:
