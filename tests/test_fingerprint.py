@@ -5,7 +5,7 @@ def test_summary_is_deterministic_and_has_headline_fields():
     a = fingerprint_summary(seed=42)
     b = fingerprint_summary(seed=42)
     assert a == b  # same seed → identical summary
-    for k in ("gpu", "gpu_vendor", "gpu_renderer", "screen", "hardware_concurrency", "fonts_n"):
+    for k in ("gpu", "gpu_vendor", "gpu_renderer", "screen", "hardware_concurrency"):
         assert k in a
 
 

@@ -14,7 +14,7 @@ def _stub_core(monkeypatch, tz="America/New_York", egress="1.2.3.4"):
     monkeypatch.setattr(L, "resolve_session_locale", lambda ip, proxy: "en-US")
     monkeypatch.setattr(L, "generate_profile", lambda seed, pin=None: object())
     monkeypatch.setattr(L, "translate_profile_to_prefs",
-                        lambda fp, **kw: {"zoom.stealth.font.fontlist": "Arial", "intl.accept_languages": "en-US, en"})
+                        lambda fp, **kw: {"intl.accept_languages": "en-US, en"})
     monkeypatch.setattr(L, "configure_proxy", lambda proxy, prefs: None)
 
 
@@ -29,7 +29,6 @@ def test_build_launch_plan_writes_user_js_and_argv(tmp_path, monkeypatch):
     assert plan.argv[0] == "/fake/firefox"
     assert "-profile" in plan.argv and str(plan.profile_dir) in plan.argv
     assert "-no-remote" in plan.argv
-    assert plan.env["STEALTHFOX_FONTLIST"] == "Arial"
     assert plan.env["STEALTHFOX_WEBRTC_PUBLIC_IP"] == "1.2.3.4"
 
 

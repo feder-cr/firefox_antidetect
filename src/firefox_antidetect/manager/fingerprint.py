@@ -33,5 +33,4 @@ def fingerprint_summary(seed: int, pin: Optional[Dict[str, Any]] = None) -> Dict
         "gpu_renderer": p.gpu.renderer,
         "screen": f"{p.screen.width}x{p.screen.height}",
         "hardware_concurrency": p.hardware.concurrency,
-        "fonts_n": len(p.fonts),
     }
