@@ -234,10 +234,13 @@ class Api:
                 last_pct[0] = pct
                 self._push(f"window.__dlProgress && window.__dlProgress({done}, {total})")
 
+        def _phase(p: str) -> None:
+            self._push(f"window.__dlPhase && window.__dlPhase({json.dumps(p)})")
+
         def _run() -> None:
             ok = True
             try:
-                _ensure_binary(progress=_progress)
+                _ensure_binary(progress=_progress, status=_phase)
             except Exception:
                 ok = False
             self._push(

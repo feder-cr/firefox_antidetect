@@ -653,6 +653,12 @@ window.__dlProgress=function(done, total){
     pct.textContent=mb(done)+" / "+mb(total)+" MB · "+p+"%";
   } else { pct.textContent=mb(done)+" MB"; }
 };
+window.__dlPhase=function(phase){
+  const bar=$("#dl-bar"), pct=$("#dl-pct"), msg=$("#dl-msg");
+  if(phase==="verifying"){ bar.classList.add("indet"); bar.style.width=""; pct.textContent="Verifying download…"; }
+  else if(phase==="extracting"){ bar.classList.add("indet"); bar.style.width=""; pct.textContent="Extracting… (almost done)";
+    if(msg) msg.textContent="Unpacking the browser. Almost there - this last step has no progress bar."; }
+};
 window.__binaryReady=function(ok, ver){
   _binReady=!!ok;
   if(ok){ hideDl(); setBinStatus("ready", ver); }
