@@ -260,7 +260,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
     <span class="sep"></span><span id="sb-total">0 identities</span>
     <span class="grow"></span>
     <span class="sb-sx" id="sb-sx"><span class="d"></span>No SX key</span>
-    <span class="mono" id="sb-bin">firefox-14</span>
+    <span class="mono" id="sb-bin">firefox-15</span>
   </div>
 
   <!-- edit / new profile -->
@@ -629,7 +629,7 @@ function setBinStatus(kind, ver){
   const el=$("#sb-bin"); if(!el) return;
   if(kind==="downloading"){ el.textContent="Downloading Firefox…"; el.style.color="var(--accent)"; }
   else if(kind==="error"){ el.textContent=(ver||"firefox")+" (download failed)"; el.style.color="var(--err)"; }
-  else { el.textContent=ver||"firefox-14"; el.style.color=""; }
+  else { el.textContent=ver||"firefox-15"; el.style.color=""; }
 }
 function showDl(kind){
   const err=(kind==="error");

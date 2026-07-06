@@ -1,4 +1,4 @@
-"""Direct-launch orchestration: Profile -> running firefox-14 subprocess."""
+"""Direct-launch orchestration: Profile -> running patched Firefox subprocess."""
 from __future__ import annotations
 
 import subprocess
