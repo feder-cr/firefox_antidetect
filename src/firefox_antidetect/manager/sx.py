@@ -10,15 +10,27 @@ Global credential (``settings["sx"]``):
 
 ``resolve_proxy()`` turns the intent + api_key into a concrete SOCKS5 proxy
 dict for ``invisible_core.configure_proxy``:
-    {"server":"socks5://host:port", "username":..., "password":...}
+    {"server":"socks5://host:443", "username":..., "password":...}
 
-NOTE (to verify against a live key): the exact ``/v2/proxy/search`` response
-shape and whether the returned endpoint needs user/pass vs IP-whitelist are
-confirmed only from the public docs schema - finalize once a real key is set.
+Verified end-to-end against a live sx.org key (2026-07-07, HTTPS clean through
+firefox-15). The model - reachable with the API KEY alone:
+  * Auth is the ``apiKey`` QUERY param (a header gives 401).
+  * ``/v2/proxy/search?country=CC`` returns ``[{"success": true},
+    "http://<base>-<sess>:<password>@<host>:9999"]``. We take the HOST, the base
+    username (the part before the first ``-``) and the password from it.
+  * The proxy is then used over SOCKS5 on **port 443** - NOT the ``9999`` in the
+    URL. Port 9999 SSL-BUMPS https (self-signed cert -> firefox
+    SEC_ERROR_UNKNOWN_ISSUER); the SAME host on 443 tunnels cleanly. The
+    username is a TARGETING username (``build_username``): the SX gateway grammar
+    ``<base>-<product>-country-CC[-city-ID]-hold-session-session-<random>``.
+  * ``/v2/dir/countries`` -> ``{"countries":[{id,code,name}]}`` and
+    ``/v2/dir/cities?countryId=<id>`` -> ``{"cities":[{id,name,...}]}`` back the
+    Country/City pickers.
 """
 from __future__ import annotations
 
 import json
+import secrets
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -27,10 +39,10 @@ from typing import Any, Dict, Optional
 API_BASE = "https://api.sx.org"
 PRODUCTS = ("residential", "mobile", "corporate")
 
-# Username product prefix for the token grammar (Approach-A fallback / when the
-# search endpoint returns a gateway that wants a targeting username).
-# `res` is verified from a real residential credential; mobile/corporate best-effort.
-_PREFIX = {"residential": "res", "mobile": "mobile", "corporate": "corporate"}
+# SX serves clean-tunneling SOCKS5 on port 443 (the 9999 the search URL carries
+# SSL-bumps https). Product tokens for the targeting-username grammar.
+SOCKS_PORT = 443
+_PREFIX = {"residential": "res", "mobile": "mobile", "corporate": "corp"}
 
 
 class SxError(Exception):
@@ -41,22 +53,19 @@ def api_key_of(settings: Dict[str, Any]) -> str:
     return str(((settings or {}).get("sx") or {}).get("api_key") or "").strip()
 
 
-def build_username(sx: Dict[str, Any]) -> str:
-    """Encode targeting into a connection username (dash-delimited tokens),
-    e.g. ``country-US-city-4744870-hold-session``.
+def build_username(base: str, sx: Dict[str, Any]) -> str:
+    """Build the SX gateway TARGETING username for the given account base.
 
-    No product is forced: a product prefix is added ONLY when the caller set one
-    explicitly - otherwise the SX account/key decides which pool is used."""
-    parts = []
-    product = (sx.get("product") or "").strip().lower()
-    if product in _PREFIX:
-        parts.append(_PREFIX[product])
-    parts += ["country", (sx.get("country") or "US").upper()]
-    city_id = sx.get("city_id")
+    Grammar (dash-delimited): ``<base>-<product>-country-<CC>[-city-<id>]`` and,
+    for a sticky session, ``-hold-session-session-<random>`` (a fresh session id
+    per call). ``<product>`` defaults to ``res`` (residential)."""
+    product = _PREFIX.get((sx.get("product") or "residential").strip().lower(), "res")
+    parts = [base, product, "country", (sx.get("country") or "US").upper()]
+    city_id = sx.get("city_id") or sx.get("city")
     if city_id:
-        parts += ["city", str(city_id)]   # SX numeric city id (from the directory)
-    if (sx.get("session") or "sticky").lower() == "sticky":
-        parts.append("hold-session")  # sticky; absent => rotating
+        parts += ["city", str(city_id)]                     # SX numeric city id
+    if (sx.get("session") or "sticky").strip().lower() != "rotating":
+        parts += ["hold-session", "session", secrets.token_hex(8)]
     return "-".join(parts)
 
 
@@ -103,44 +112,46 @@ def check_api_key(api_key: str) -> Dict[str, Any]:
 
 
 def resolve_proxy(sx: Dict[str, Any], settings: Dict[str, Any]) -> Dict[str, str]:
-    """Intent + api_key -> a SOCKS5 proxy dict. Uses /v2/proxy/search to get an
-    endpoint for the requested country/product."""
+    """Intent + api_key -> a concrete SOCKS5 proxy dict, using the API KEY alone.
+
+    ``/v2/proxy/search?country=CC`` gives an account credential + a host; we reuse
+    that host over SOCKS5 on port 443 (the clean-tunneling port) with a targeting
+    username, so both the country pool and the http/socks credentials come from
+    the key - no dashboard connection string needed."""
     api_key = api_key_of(settings)
     if not api_key:
         raise SxError("Set your SX.org API key in the Proxies menu first.")
     cc = (sx.get("country") or "US").upper()
-    params = {"country": cc, "limit": 1}
-    product = (sx.get("product") or "").strip().lower()
-    if product:
-        params["types"] = product   # otherwise SX uses the account's own product
-    res = _get("/v2/proxy/search", api_key, params)
-    endpoint = _first_endpoint(res)
-    if not endpoint:
-        raise SxError(f"SX returned no proxy for {cc}.")
+    res = _get("/v2/proxy/search", api_key, {"country": cc, "limit": 1})
+    url = _first_proxy_url(res)
+    if not url:
+        raise SxError(f"SX has no proxy available for {cc}.")
+    u = urllib.parse.urlparse(url)
+    host = u.hostname
+    # the search username is ``<base>-<session-uuid>``; keep only the account base
+    base = (urllib.parse.unquote(u.username or "").split("-", 1)[0]).strip()
+    password = urllib.parse.unquote(u.password or "")
+    if not (host and base and password):
+        raise SxError("SX returned an unusable proxy credential.")
     return {
-        "server": f"socks5://{endpoint}",
-        "username": build_username(sx),
-        "password": "",  # filled once we confirm the account's auth model with a live key
+        "server": f"socks5://{host}:{SOCKS_PORT}",
+        "username": build_username(base, {**sx, "country": cc}),
+        "password": password,
     }
 
 
-def _first_endpoint(res: Any) -> Optional[str]:
-    """Pull the first ``host:port`` out of the search response (shape-tolerant)."""
-    items = res
-    if isinstance(res, dict):
-        for k in ("data", "proxies", "result", "items"):
-            if isinstance(res.get(k), list):
-                items = res[k]
-                break
-    if isinstance(items, list) and items:
-        it = items[0]
-        if isinstance(it, str) and ":" in it:
+def _first_proxy_url(res: Any) -> Optional[str]:
+    """Pull the first ``scheme://user:pass@host:port`` proxy URL out of the
+    /v2/proxy/search array. Returns None if SX returned no proxy (the array is
+    just ``[{"success": true}]`` when the pool is empty). Tolerant of a dict
+    form ``{host, port, username, password}`` in case the schema shifts."""
+    items = res if isinstance(res, list) else [res]
+    for it in items:
+        if isinstance(it, str) and "://" in it and "@" in it:
             return it
-        if isinstance(it, dict):
-            host = it.get("host") or it.get("ip") or it.get("server")
-            port = it.get("port")
-            if host and port:
-                return f"{host}:{port}"
-            if isinstance(host, str) and ":" in host:
-                return host
+        if isinstance(it, dict) and it.get("host") and it.get("port"):
+            user = it.get("username") or it.get("user") or ""
+            pw = it.get("password") or it.get("pass") or ""
+            cred = f"{user}:{pw}@" if user else ""
+            return f"socks5://{cred}{it['host']}:{it['port']}"
     return None

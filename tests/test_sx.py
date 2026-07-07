@@ -1,6 +1,6 @@
-"""SX.org integration: username grammar, settings, and proxy resolution guards.
-Network paths (check_api_key with a real key, resolve_proxy with a key) are NOT
-exercised here - only the offline logic and the not-configured guards."""
+"""SX.org integration: proxy-URL parsing, settings, and resolution guards.
+The live network paths (check_api_key / directory / search with a real key) are
+NOT exercised here - only the offline parse logic and the not-configured guards."""
 from __future__ import annotations
 
 import pytest
@@ -11,23 +11,48 @@ from firefox_antidetect.manager.store import ProfileStore
 from firefox_antidetect.ui.web_app import Api
 
 
-def test_build_username_sticky_rotating_and_country_case():
-    # product prefix ONLY when explicitly set - no default is injected
-    assert sx.build_username({"product": "residential", "country": "us", "session": "sticky"}) \
-        == "res-country-US-hold-session"
-    assert sx.build_username({"product": "residential", "country": "US", "session": "rotating"}) \
-        == "res-country-US"
-    assert sx.build_username({"product": "mobile", "country": "fr", "session": "sticky"}) \
-        == "mobile-country-FR-hold-session"
-    # no product -> no prefix (the SX account decides the pool), default session=sticky
-    assert sx.build_username({"country": "de"}) == "country-DE-hold-session"
+def test_first_proxy_url_parses_search_array():
+    # /v2/proxy/search returns [{"success": true}, "http://user:pass@host:port"]
+    res = [{"success": True}, "http://u123-abc:pw456@212.8.248.20:9999"]
+    assert sx._first_proxy_url(res) == "http://u123-abc:pw456@212.8.248.20:9999"
+    # empty pool -> just the success element, no URL string
+    assert sx._first_proxy_url([{"success": True}]) is None
+    # tolerant of a dict form in case the schema shifts
+    assert sx._first_proxy_url([{"host": "h", "port": 1, "username": "u", "password": "p"}]) \
+        == "socks5://u:p@h:1"
 
 
-def test_build_username_with_city_id():
-    assert sx.build_username({"country": "US", "city_id": 4744870, "session": "sticky"}) \
-        == "country-US-city-4744870-hold-session"
-    # no city_id -> no city token
-    assert sx.build_username({"country": "US", "city_id": None}) == "country-US-hold-session"
+def test_build_username_grammar():
+    u = sx.build_username("acct", {"country": "us", "product": "residential", "session": "sticky"})
+    assert u.startswith("acct-res-country-US-hold-session-session-")
+    # rotating -> no session suffix
+    assert sx.build_username("acct", {"country": "DE", "session": "rotating"}) == "acct-res-country-DE"
+    # city id + mobile product
+    u2 = sx.build_username("acct", {"country": "US", "city_id": 5102713, "product": "mobile"})
+    assert u2.startswith("acct-mobile-country-US-city-5102713-hold-session-session-")
+    # two calls -> different session ids (fresh sticky session each time)
+    a = sx.build_username("acct", {"country": "US"})
+    b = sx.build_username("acct", {"country": "US"})
+    assert a != b
+
+
+def test_resolve_proxy_uses_gateway_port_443_and_targeting_username(monkeypatch):
+    # search gives an account credential (<base>-<uuid>:pass) + a host; resolve_proxy
+    # reuses the host over socks5 on port 443 with a targeting username.
+    monkeypatch.setattr(sx, "_get",
+                        lambda path, key, params, **kw: [{"success": True},
+                                                         "http://nd0base-abcd-1234:secretpw@1.2.3.4:9999"])
+    got = sx.resolve_proxy({"provider": "sx", "country": "US"}, {"sx": {"api_key": "K"}})
+    assert got["server"] == "socks5://1.2.3.4:443"          # NOT the 9999 in the URL
+    assert got["password"] == "secretpw"
+    assert got["username"].startswith("nd0base-res-country-US-hold-session-session-")  # base kept, targeting built
+
+
+def test_resolve_proxy_empty_pool_raises(monkeypatch):
+    # SX returns just [{"success": true}] when the requested pool is empty
+    monkeypatch.setattr(sx, "_get", lambda path, key, params, **kw: [{"success": True}])
+    with pytest.raises(sx.SxError):
+        sx.resolve_proxy({"provider": "sx", "country": "KP"}, {"sx": {"api_key": "K"}})
 
 
 def test_sx_directory_guards_without_key(tmp_path):
