@@ -478,12 +478,19 @@ async function refreshKeyhint(){
   if(a){ let c={configured:false}; try{ c=await a.sx_configured(); }catch(e){} state.sxConfigured=!!c.configured; }
   kh.classList.toggle("hidden", state.proxymode!=="sx" || state.sxConfigured);
   updateValidity();
+  if(state.proxymode==="sx" && state.sxConfigured) loadCountries();  // key just became available -> populate
 }
 /* A profile with SX selected but no API key can't launch - block Save/Launch. */
 function updateValidity(){
   const incomplete = (state.proxymode==="sx" && !state.sxConfigured);
   $("#m-save").disabled = incomplete;                       // saving never needs the binary
   $("#m-savelaunch").disabled = incomplete || !_binReady;   // launching does
+  // Country/City come from the SX directory (needs the API key) - disable them
+  // until a key is set, so it's clear they're unavailable rather than just empty.
+  const sxReady = state.proxymode==="sx" && state.sxConfigured;
+  const cSel=$("#f-country"), cInp=$("#f-city");
+  if(cSel) cSel.disabled = !sxReady;
+  if(cInp) cInp.disabled = !sxReady;
 }
 async function refreshFp(){
   const a=api(); if(!a) return;
