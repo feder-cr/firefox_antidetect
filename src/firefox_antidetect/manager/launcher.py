@@ -12,17 +12,7 @@ try:
 except Exception:  # pragma: no cover - psutil is a declared dependency
     psutil = None  # type: ignore
 
-from invisible_core import (
-    ensure_binary,
-    prepare_session_geo,
-    resolve_session_locale,
-    generate_profile,
-    translate_profile_to_prefs,
-    configure_proxy,
-    write_user_js,
-    build_launch_env,
-)
-from invisible_core._geo import SessionGeo as _SessionGeo  # for test stubs + typing
+from invisible_core import build_launch_plan as _core_build_launch_plan, LaunchPlan
 
 from .models import Profile
 from . import paths
@@ -43,14 +33,6 @@ def resolve_launch_proxy(proxy: Optional[Dict[str, Any]], base: Optional[Path] =
 
 
 @dataclass
-class LaunchPlan:
-    binary: str
-    profile_dir: Path
-    argv: List[str]
-    env: Dict[str, str]
-
-
-@dataclass
 class LaunchHandle:
     pid: int              # the REAL browser pid (resolved), NOT the launcher stub on Windows
     profile_id: str
@@ -58,30 +40,23 @@ class LaunchHandle:
     browser: Any = None   # psutil.Process of the real browser, when resolved (else None)
 
 
-def _loc(locale: str, geo: "_SessionGeo", proxy: Optional[Dict[str, str]]) -> str:
-    """Resolve a ``"auto"`` locale to a concrete BCP-47 tag from the egress
-    (reusing the egress IP already discovered for the timezone); pass an
-    explicit tag through. ``translate_profile_to_prefs`` needs a real tag -
-    it does NOT special-case ``"auto"``."""
-    if (locale or "").strip().lower() == "auto":
-        return resolve_session_locale(geo.egress_ip, proxy)
-    return locale
-
-
 def build_launch_plan(profile: Profile, base: Optional[Path] = None) -> LaunchPlan:
-    binary = str(ensure_binary(profile.binary_ver) if profile.binary_ver else ensure_binary())
-    rproxy = resolve_launch_proxy(profile.proxy, base)  # SX intent -> live SOCKS5 endpoint
-    geo = prepare_session_geo(profile.timezone, rproxy)  # raises behind a dead proxy (by design)
-    fp = generate_profile(seed=profile.seed, pin=profile.pin)
-    prefs = translate_profile_to_prefs(
-        fp, locale=_loc(profile.locale, geo, rproxy), timezone=geo.timezone
-    )
-    configure_proxy(rproxy, prefs)  # mutates prefs for SOCKS auth
+    """Resolve the profile's proxy intent (SX -> concrete endpoint) and its
+    profile dir, then delegate the whole session setup to
+    ``invisible_core.build_launch_plan``. The manager owns only SX resolution and
+    where the profile lives; the fingerprint, geo, prefs, user.js, env and argv
+    are all invisible_core's job (one shared code path with the wrapper)."""
+    rproxy = resolve_launch_proxy(profile.proxy, base)  # SX intent -> concrete endpoint
     pdir = paths.profile_dir(profile.id, base=base)
-    write_user_js(pdir, prefs)
-    env = build_launch_env(prefs, timezone=geo.timezone or None, egress_ip=geo.egress_ip)
-    argv = [binary, "-no-remote", "-profile", str(pdir), "about:blank"]
-    return LaunchPlan(binary=binary, profile_dir=pdir, argv=argv, env=env)
+    return _core_build_launch_plan(
+        profile.seed,
+        profile_dir=pdir,
+        proxy=rproxy,
+        timezone=profile.timezone,
+        locale=profile.locale,
+        pin=profile.pin,
+        binary_ver=profile.binary_ver,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -116,53 +91,69 @@ def _is_main_firefox(p: "psutil.Process", target: str) -> bool:
     return any(target in (c or "") for c in cmd)
 
 
-def resolve_browser_process(
-    profile_dir: Path, popen_proc: Any, timeout: float = 6.0, settle: float = 1.5
-) -> Any:
+def _has_contentproc_child(p: "psutil.Process") -> bool:
+    """True if ``p`` has at least one ``-contentproc`` firefox child. The REAL
+    browser spawns content processes; the Windows launcher stub does not - so
+    this cleanly tells the browser from the stub even while both exist."""
+    try:
+        for c in p.children(recursive=False):
+            try:
+                if "-contentproc" in c.cmdline():
+                    return True
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return False
+
+
+def resolve_browser_process(profile_dir: Path, popen_proc: Any, timeout: float = 8.0) -> Any:
     """Return the psutil.Process of the REAL browser for this profile, or None.
 
-    Handles all three OSes: on Windows it grabs the child the launcher stub
-    spawned (or finds it after the stub exits); on Linux/macOS it confirms the
-    launched process itself is the browser."""
+    The browser is the main firefox process (``-profile <dir>``, not a
+    ``-contentproc`` child) that HAS content-process children. That test is what
+    makes this reliable cross-OS: on Windows the launcher stub also matches the
+    ``-profile`` filter but never spawns content children, so it is never
+    mistaken for the browser; on Linux/macOS the launched process is the browser
+    and has them. Falls back to any alive main-firefox match if content children
+    have not appeared before the timeout."""
     if psutil is None:
         return None
     target = str(profile_dir)
     launched_pid = getattr(popen_proc, "pid", None)
     start = time.monotonic()
+    fallback = None
     while time.monotonic() - start < timeout:
-        # (1) Windows: a firefox child of the launcher stub with our profile.
+        candidates: List[Any] = []
+        seen = set()
+        # Prefer the stub's subtree (Windows), then a global scan (Linux/mac +
+        # re-parented Windows child once the stub has exited).
         if launched_pid is not None:
             try:
                 for c in psutil.Process(launched_pid).children(recursive=True):
                     if _is_main_firefox(c, target):
-                        return c
+                        candidates.append(c)
+                        seen.add(c.pid)
             except Exception:
-                pass  # stub already exited -> fall through to the scan
-        # (2) Scan for a main firefox with our profile that isn't the stub.
-        launched_match = None
+                pass
         try:
             for p in psutil.process_iter(["name"]):
-                nm = (p.info.get("name") or "").lower()
-                if not nm.startswith("firefox"):
+                if not (p.info.get("name") or "").lower().startswith("firefox"):
                     continue
-                if not _is_main_firefox(p, target):
+                if p.pid in seen:
                     continue
-                if p.pid == launched_pid:
-                    launched_match = p
-                else:
-                    return p  # the real (re-parented) browser
+                if _is_main_firefox(p, target):
+                    candidates.append(p)
         except Exception:
             pass
-        # (3) Linux/macOS: the launched process itself is the browser and stays
-        # alive past the settle window (the Windows stub would have exited).
-        try:
-            stub_alive = popen_proc.poll() is None
-        except Exception:
-            stub_alive = launched_match is not None
-        if launched_match is not None and stub_alive and (time.monotonic() - start) >= settle:
-            return launched_match
+        for c in candidates:
+            if _has_contentproc_child(c):
+                return c  # unambiguously the real browser
+        alive = [c for c in candidates if c.is_running()]
+        if alive:
+            fallback = alive[0]
         time.sleep(0.25)
-    return None
+    return fallback
 
 
 def process_alive(psproc: Any) -> bool:
