@@ -4,7 +4,7 @@
   <a href="https://github.com/feder-cr/firefox_antidetect/stargazers"><img src="https://img.shields.io/github/stars/feder-cr/firefox_antidetect" alt="GitHub stars"></a>
 </p>
 
-<h3 align="center">Run many undetectable browser profiles on one patched Firefox. No code.</h3>
+<h3 align="center">Run many undetectable browser profiles on one patched Firefox.</h3>
 
 One desktop app, many identities. Each profile is a distinct fingerprint (GPU, canvas, fonts, audio, WebRTC) set at the C++ source level plus its own proxy and saved logins, so every profile passes bot detection on its own. Hit Launch and a real Firefox window opens with that identity.
 
