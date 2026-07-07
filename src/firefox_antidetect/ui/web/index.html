@@ -150,9 +150,13 @@ tr:hover .rowbtn.ico2,tr.sel .rowbtn.ico2{opacity:1}
 .seg button:hover{color:var(--text)}
 .seg button.on{background:var(--panel);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.14)}
 .seg.sx button.on{color:var(--accent)}
-select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 30px 10px 11px;width:100%;appearance:none;cursor:pointer;
-  background-image:linear-gradient(45deg,transparent 50%,var(--faint) 50%),linear-gradient(135deg,var(--faint) 50%,transparent 50%);
-  background-position:calc(100% - 16px) 19px,calc(100% - 11px) 19px;background-size:5px 5px;background-repeat:no-repeat}
+select{font:400 13.5px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 34px 11px 12px;width:100%;appearance:none;cursor:pointer;transition:border-color .12s,box-shadow .12s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238894A0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;background-size:14px}
+select:hover:not(:disabled),.field input:hover:not(:disabled){border-color:var(--faint)}
+select:focus,.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);outline:none}
+select:disabled,.field input:disabled{opacity:.55;cursor:not-allowed;background:var(--line-2);color:var(--faint)}
+select:disabled{background-image:none}
 
 /* modal */
 .backdrop{position:fixed;inset:0;z-index:40;display:none;place-items:center;padding:26px;
@@ -171,7 +175,7 @@ select{font:400 13px/1 var(--ui);color:var(--text);background:var(--panel-2);bor
 .field{display:flex;flex-direction:column;gap:6px}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 .field label{font-size:12px;color:var(--muted);font-weight:500}
-.field input{font:400 13.5px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px}
+.field input{font:400 13.5px/1 var(--ui);color:var(--text);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 12px;transition:border-color .12s,box-shadow .12s}
 .field input.mono{font-family:var(--mono)}
 .field input::placeholder{color:var(--faint)}
 .hidden{display:none!important}
