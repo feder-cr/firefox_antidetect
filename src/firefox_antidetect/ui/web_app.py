@@ -70,6 +70,12 @@ class Api:
         h = self._handles.get(pid)
         if h is None:
             return False
+        # Prefer the resolved real browser process (psutil) - on Windows the raw
+        # Popen pid is the launcher stub that exits ~1s after launch, so polling
+        # it would report the profile as stopped while the browser is still open.
+        b = getattr(h, "browser", None)
+        if b is not None:
+            return _launcher.process_alive(b)
         proc = getattr(h, "process", None)
         poll = getattr(proc, "poll", None)
         return poll() is None if callable(poll) else True
@@ -78,6 +84,18 @@ class Api:
         """Block a daemon thread on the launched process; when the user closes
         the browser it exits and we push a UI refresh (event-driven, no polling
         lag). A light JS poll is the safety net for anything this misses."""
+        b = getattr(handle, "browser", None)
+        if b is not None:  # wait on the real browser (psutil), not the stub
+            def _run_browser() -> None:
+                try:
+                    b.wait()
+                except Exception:
+                    pass
+                self._notify()
+
+            threading.Thread(target=_run_browser, daemon=True).start()
+            return
+
         proc = getattr(handle, "process", None)
         wait = getattr(proc, "wait", None)
         if not callable(wait):
@@ -188,8 +206,17 @@ class Api:
             return {"ok": False, "error": str(e)}
 
     def stop_profile(self, pid: str) -> Dict[str, Any]:
-        """Close a running profile's browser from the manager."""
+        """Close a running profile's browser (and its child processes) from the
+        manager. Terminates the whole tree so the launcher-stub relaunch on
+        Windows can't leave the real browser orphaned."""
         h = self._handles.get(pid)
+        b = getattr(h, "browser", None)
+        if b is not None:
+            try:
+                _launcher.terminate_process_tree(b)
+                return {"ok": True}
+            except Exception as e:
+                return {"ok": False, "error": str(e)}
         proc = getattr(h, "process", None)
         poll = getattr(proc, "poll", None)
         if proc is not None and callable(poll) and poll() is None:
