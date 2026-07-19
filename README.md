@@ -1,7 +1,7 @@
 <p>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
-  <a href="https://github.com/feder-cr/firefox_antidetect/stargazers"><img src="https://img.shields.io/github/stars/feder-cr/firefox_antidetect" alt="GitHub stars"></a>
+  <a href="https://github.com/feder-cr/firefox_antidetect_patch/releases"><img src="https://img.shields.io/badge/Firefox-150.0.1-FF7139?logo=firefox&logoColor=white" alt="Firefox 150.0.1"></a>
 </p>
 
 <h3 align="center">Run many undetectable browser profiles on one patched Firefox.</h3>
