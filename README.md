@@ -9,14 +9,14 @@
 One desktop app, many identities. Each profile is a distinct fingerprint (GPU, canvas, fonts, audio, WebRTC) set at the C++ source level plus its own proxy and saved logins, so every profile passes bot detection on its own. Hit Launch and a real Firefox window opens with that identity.
 
 <div align="center">
-<img src="docs/screenshot.png" alt="firefox_antidetect" width="820">
+<img src="docs/screenshot.png" alt="invisible_firefox" width="820">
 </div>
 
 ## Install
 
 ```bash
-pip install git+https://github.com/feder-cr/firefox_antidetect.git
-python -m firefox_antidetect
+pip install git+https://github.com/feder-cr/invisible_firefox.git
+python -m invisible_firefox
 ```
 
 Everything it needs is downloaded automatically, nothing to fetch by hand: the patched Firefox binary (once, SHA256-verified, cached) the moment the app opens, and the GeoIP database when a proxy needs it. Runs on **Windows**, **Linux** and **macOS**.

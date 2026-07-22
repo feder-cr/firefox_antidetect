@@ -3,8 +3,8 @@ import time
 
 import pytest
 
-from firefox_antidetect.manager.models import Profile
-from firefox_antidetect.manager import launcher as L
+from invisible_firefox.manager.models import Profile
+from invisible_firefox.manager import launcher as L
 from invisible_core.launch import LaunchPlan
 
 

@@ -328,7 +328,7 @@ def run() -> int:
     store = ProfileStore(paths.db_path())
     api = Api(store, base=None)
     webview.create_window(
-        "firefox_antidetect",
+        "invisible_firefox",
         html=_index_html(),
         js_api=api,
         width=1180,

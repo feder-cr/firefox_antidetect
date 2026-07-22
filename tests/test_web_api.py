@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import pytest
 
-from firefox_antidetect.manager.store import ProfileStore
-from firefox_antidetect.ui.web_app import Api, _seed_int
+from invisible_firefox.manager.store import ProfileStore
+from invisible_firefox.ui.web_app import Api, _seed_int
 
 
 def _api(tmp_path):

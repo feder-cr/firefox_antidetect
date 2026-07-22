@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import pytest
 
-from firefox_antidetect.manager import sx, settings
-from firefox_antidetect.manager.launcher import resolve_launch_proxy
-from firefox_antidetect.manager.store import ProfileStore
-from firefox_antidetect.ui.web_app import Api
+from invisible_firefox.manager import sx, settings
+from invisible_firefox.manager.launcher import resolve_launch_proxy
+from invisible_firefox.manager.store import ProfileStore
+from invisible_firefox.ui.web_app import Api
 
 
 def test_first_proxy_url_parses_search_array():

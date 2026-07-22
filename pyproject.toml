@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "firefox-antidetect"
+name = "invisible-firefox"
 version = "0.1.0"
 description = "Antidetect browser profile manager for the patched Firefox (manual use)."
 readme = "README.md"
@@ -31,7 +31,7 @@ dev = ["pytest>=7"]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/firefox_antidetect"]
+packages = ["src/invisible_firefox"]
 
 [tool.pytest.ini_options]
 addopts = "-m 'not integration'"

@@ -1,7 +1,7 @@
 """Live-status API: statuses() reports the running map, stop_profile() is graceful."""
-import firefox_antidetect.ui.web_app as web_app
-from firefox_antidetect.manager.store import ProfileStore
-from firefox_antidetect.ui.web_app import Api
+import invisible_firefox.ui.web_app as web_app
+from invisible_firefox.manager.store import ProfileStore
+from invisible_firefox.ui.web_app import Api
 
 
 def _api(tmp_path):
